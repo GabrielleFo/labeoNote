@@ -30,6 +30,19 @@ function frais_user_frais_form() {
                 <th scope="row"><label for="piece_jointe">Pièce jointe</label></th>
                 <td><input type="file" name="piece_jointe" id="piece_jointe"></td>
             </tr>
+            <tr valign="top">
+    <th scope="row"><label for="manager">Manager (N+1)</label></th>
+    <td>
+        <select name="manager" id="manager" required>
+            <?php
+            $managers = get_users(array('role' => 'manager_n1')); // Assurez-vous d'avoir un rôle 'manager'
+            foreach ($managers as $manager) {
+                echo '<option value="' . esc_attr($manager->ID) . '">' . esc_html($manager->display_name) . '</option>';
+            }
+            ?>
+        </select>
+    </td>
+</tr>
         </table>
         <?php submit_button('Ajouter Frais'); ?>
     </form>
@@ -41,7 +54,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (current_user_can('submit_frais') && isset($_POST['date'], $_POST['type'], $_POST['montant'], $_POST['description'])) {
+    if (current_user_can('submit_frais') && isset($_POST['date'], $_POST['type'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
@@ -64,6 +77,8 @@ function frais_submit_frais_action() {
             }
         }
 
+        $manager_id = intval($_POST['manager']);
+
         $wpdb->insert($table_name, array(
             'date' => $date,
             'type' => $type,
@@ -71,6 +86,7 @@ function frais_submit_frais_action() {
             'description' => $description,
             'piece_jointe' => $piece_jointe,
             'user_id' => $user_id,
+            'manager_id' => $manager_id,
             'status' => 'en_attente'
         ));
 

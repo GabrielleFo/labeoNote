@@ -2,12 +2,17 @@
 function frais_display_validation_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'frais';
+    $current_user = wp_get_current_user();
 
-    $results = $wpdb->get_results("SELECT * FROM $table_name WHERE status = 'en_attente'", OBJECT);
+    // Récupérer seulement les frais en attente dont le manager_id correspond à l'utilisateur actuel
+    $results = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $table_name WHERE status = 'en_attente' AND manager_id = %d",
+        $current_user->ID
+    ), OBJECT);
     
     if ($results) {
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>colloboraeur</th><th>Action</th></tr></thead>';
+        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Collaborateur</th><th>Action</th></tr></thead>';
         echo '<tbody>';
         foreach ($results as $row) {
             $user = get_userdata($row->user_id);
@@ -36,18 +41,29 @@ function validate_frais_action() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'frais';
         $current_user = wp_get_current_user();
-        $validator_name = $current_user->display_name;
-        $wpdb->update(
-            $table_name,
-            array(
-                'status' => 'valide',
-                'n_plus_1_id' => $validator_name
-            ),
-            array('id' => $_GET['id']),
-            array('%s','%s'),
-            array('%d'));
+        
+        // Récupérez les détails du frais
+        $frais = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_GET['id']));
+        
+        // Vérifiez si l'utilisateur actuel est le manager désigné
+        if ($frais && $frais->manager_id == $current_user->ID) {
+            $wpdb->update(
+                $table_name,
+                array(
+                    'status' => 'valide',
+                    'n_plus_1_id' => $current_user->display_name
+                ),
+                array('id' => $_GET['id']),
+                array('%s', '%s'),
+                array('%d')
+            );
+            wp_redirect(admin_url('admin.php?page=gestion-des-frais&message=validated'));
+        } else {
+            wp_redirect(admin_url('admin.php?page=gestion-des-frais&error=not_authorized'));
+        }
+    } else {
+        wp_redirect(admin_url('admin.php?page=gestion-des-frais&error=invalid_id'));
     }
-    wp_redirect(admin_url('admin.php?page=gestion-des-frais'));
     exit;
 }
 add_action('admin_post_validate_frais', 'validate_frais_action');
