@@ -1,0 +1,25 @@
+
+.widefat td{
+
+    color:blue!important;
+}
+.tableau{
+    font-size: 30px; 
+    color:blueviolet;
+    border:1px solid blueviolet;
+    text-align:center ;
+}
+.attente{
+    font-size: 30px; 
+    color:white;
+    border:1px solid red;
+    text-align:center ;
+    background-color:red;
+}
+.manager{
+    font-size: 30px; 
+    color:white;
+    border:1px solid blueviolet;
+    text-align:center ;
+    background-color:blueviolet
+}
