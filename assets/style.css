@@ -1,8 +1,8 @@
 
-.widefat td{
+/* .widefat td{
 
     color:blue!important;
-}
+} */
 .tableau{
     font-size: 30px; 
     color:blueviolet;
@@ -16,7 +16,7 @@
     text-align:center ;
     background-color:red;
 }
-.manager{
+p.manager{
     font-size: 30px; 
     color:white;
     border:1px solid blueviolet;
