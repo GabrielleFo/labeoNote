@@ -3,16 +3,21 @@ function frais_display_validation_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'frais';
     $current_user = wp_get_current_user();
+    $table_frais = $wpdb->prefix . 'frais';  // Nom de votre table des frais
+    $table_usermeta = $wpdb->prefix . 'usermeta';  // Nom de votre table usermeta
 
-    // Récupérer seulement les frais en attente dont le manager_id correspond à l'utilisateur actuel
-    $results = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM $table_name WHERE status = 'en_attente' AND manager_id = %d",
-        $current_user->ID
-    ), OBJECT);
+  // Récupérer les frais en attente avec le code analytique
+$results = $wpdb->get_results($wpdb->prepare(
+    "SELECT f.*, um.meta_value AS analytique
+     FROM $table_frais f
+     LEFT JOIN $table_usermeta um ON f.user_id = um.user_id AND um.meta_key = 'analytique'
+     WHERE f.status = 'en_attente' AND f.manager_id = %d",
+    $current_user->ID
+), OBJECT);
     
     if ($results) {
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Collaborateur</th><th>Action</th></tr></thead>';
+        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Collaborateur</th><th>code analytique</th><th>Action</th></tr></thead>';
         echo '<tbody>';
         foreach ($results as $row) {
             $user = get_userdata($row->user_id);
@@ -22,6 +27,7 @@ function frais_display_validation_table() {
             echo '<td>' . esc_html($row->montant) . '</td>';
             echo '<td>' . esc_html($row->description) . '</td>';
             echo '<td>' . esc_html($user->display_name) . '</td>';
+            echo '<td>' . esc_html($row->analytique) . '</td>';  // Affichage du code analytique
             echo '<td>
                     <a href="' . esc_url(admin_url('admin-post.php?action=validate_frais&id=' . $row->id)) . '">Valider</a>
                     <a href="' . esc_url(admin_url('admin-post.php?action=refuse_frais&id=' . $row->id)) . '">Refuser</a>

@@ -10,6 +10,12 @@ function frais_user_frais_form() {
         <input type="hidden" name="action" value="submit_frais">
         <?php wp_nonce_field('frais_nonce_action', 'frais_nonce'); ?>
         <table class="form-table">
+        <tr valign="top">
+        <th scope="row"><label for="analytique">Code Analytique</label></th>
+        <td>
+            <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+        </td>
+    </tr>
             <tr valign="top">
                 <th scope="row"><label for="date">Date</label></th>
                 <td><input type="date" name="date" id="date" required></td>
