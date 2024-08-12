@@ -3,7 +3,7 @@
 
 // Afficher le formulaire
 function frais_user_frais_form() {
-    if (current_user_can('submit_frais')) {
+    if (is_user_logged_in()) {
     ?>
     <h2>Ajouter un frais</h2>
     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
@@ -60,7 +60,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (current_user_can('submit_frais') && isset($_POST['date'], $_POST['type'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
+    if (is_user_logged_in() && isset($_POST['date'], $_POST['type'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
