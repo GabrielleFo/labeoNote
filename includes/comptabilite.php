@@ -1,14 +1,19 @@
 <?php
 function frais_display_export_table() {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'frais';
+    $table_frais = $wpdb->prefix . 'frais';
 
-    $results = $wpdb->get_results("SELECT * FROM $table_name WHERE status = 'valide'", OBJECT);
+    $results = $wpdb->get_results("
+    SELECT f.*, um.meta_value AS analytique
+    FROM $table_frais f
+    LEFT JOIN $wpdb->usermeta um ON f.user_id = um.user_id AND um.meta_key = 'analytique'
+    WHERE f.status = 'valide'
+", OBJECT);
 
     if ($results) {
         echo'<p class="manager">Notes de frais validé par les managers </p>';
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Utilisateur</th><th>validé par </th></tr></thead>';
+        echo '<thead><tr><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Utilisateur</th><th>validé par </th><th>Code analytique</tr></thead>';
         echo '<tbody>';
         foreach ($results as $row) {
             $user = get_userdata($row->user_id);
@@ -20,6 +25,7 @@ function frais_display_export_table() {
             echo '<td>' . esc_html($row->description) . '</td>';
             echo '<td>' . esc_html($user->display_name) . '</td>';
             echo '<td>' . esc_html($row->n_plus_1_id) . '</td>';
+            echo '<td>' . esc_html($row->analytique) . '</td>'; // Affichage du code analytique
             echo '</tr>';
         }
         echo '</tbody>';
@@ -38,10 +44,15 @@ function frais_export_button() {
 
 function frais_export_frais_action() {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'frais';
+    $table_frais = $wpdb->prefix . 'frais';
 
 
-    $results = $wpdb->get_results("SELECT * FROM $table_name WHERE status = 'valide'", ARRAY_A);
+    $results = $wpdb->get_results("
+    SELECT f.*, um.meta_value AS analytique
+    FROM $table_frais f
+    LEFT JOIN $wpdb->usermeta um ON f.user_id = um.user_id AND um.meta_key = 'analytique'
+    WHERE f.status = 'valide'
+", ARRAY_A);
 
     if ($results) {
         $filename = 'frais_valides_' . date('Y-m-d') . '.csv';
@@ -58,7 +69,7 @@ function frais_export_frais_action() {
          ?>
         
          <?php
-        fputcsv($output, array('Date', 'Type de frais', 'Montant', 'Description','utilisateur','Validé par'));
+        fputcsv($output, array('Date', 'Type de frais', 'Montant', 'Description','utilisateur','Validé par','code analytique'));
 
         foreach ($results as $row) {
             $user = get_userdata($row['user_id']);
@@ -69,7 +80,8 @@ function frais_export_frais_action() {
                  $row['montant'],
                 $row['description'], 
                 $user->display_name,
-                $row['n_plus_1_id']
+                $row['n_plus_1_id'],
+                $row['analytique']
             ));
         }
         fclose($output);
