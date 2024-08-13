@@ -1,6 +1,5 @@
 <?php
 
-
 // Afficher le formulaire
 function frais_user_frais_form() {
     if (is_user_logged_in()) {
@@ -10,12 +9,32 @@ function frais_user_frais_form() {
         <input type="hidden" name="action" value="submit_frais">
         <?php wp_nonce_field('frais_nonce_action', 'frais_nonce'); ?>
         <table class="form-table">
-        <tr valign="top">
-        <th scope="row"><label for="analytique">Code Analytique</label></th>
-        <td>
-            <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
-        </td>
-    </tr>
+            <tr valign="top">
+            <th scope="row"><label for="analytique">Code Analytique</label></th>
+            <td>
+                <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+            </td>
+            </tr>
+            <?php
+            // Récupérer l'ID du manager
+            $manager_id = get_user_meta(get_current_user_id(), 'manager', true);
+
+            // Récupérer le display_name du manager
+            $manager_name = '';
+            if ($manager_id) {
+                $manager_data = get_userdata($manager_id);
+                if ($manager_data) {
+                    $manager_name = $manager_data->display_name;
+                }
+            }
+            ?>
+            <tr valign="top">
+            <th scope="row"><label for="manager">Manager</label></th>
+            <td>
+                <input type="text" name="manager" id="manager" value="<?php echo esc_attr($manager_name); ?>" readonly>
+            </td>
+            </tr>
+
             <tr valign="top">
                 <th scope="row"><label for="date">Date</label></th>
                 <td><input type="date" name="date" id="date" required></td>
@@ -37,18 +56,19 @@ function frais_user_frais_form() {
                 <td><input type="file" name="piece_jointe" id="piece_jointe"></td>
             </tr>
             <tr valign="top">
-    <th scope="row"><label for="manager">Manager (N+1)</label></th>
-    <td>
-        <select name="manager" id="manager" required>
+            <th scope="row"><label for="manager_n2">Manager (N+2)</label></th>
+                <td>
+                <select name="manager_n2" id="manager_n2">
+            <option value="">Aucun</option>
             <?php
-            $managers = get_users(array('role' => 'manager_n1')); // Assurez-vous d'avoir un rôle 'manager'
-            foreach ($managers as $manager) {
-                echo '<option value="' . esc_attr($manager->ID) . '">' . esc_html($manager->display_name) . '</option>';
+            $managers_n2 = get_users(array('role' => 'manager_n2'));
+            foreach ($managers_n2 as $manager_n2) {
+                echo '<option value="' . esc_attr($manager_n2->ID) . '">' . esc_html($manager_n2->display_name) . '</option>';
             }
             ?>
         </select>
-    </td>
-</tr>
+                </td>
+            </tr>
         </table>
         <?php submit_button('Ajouter Frais'); ?>
     </form>
@@ -74,6 +94,10 @@ function frais_submit_frais_action() {
         $montant = floatval($_POST['montant']);
         $description = sanitize_textarea_field($_POST['description']);
         $user_id = get_current_user_id();
+        $manager_n1 = get_user_meta($user_id, 'manager', true); // Manager N-1
+
+        $manager_n2 = isset($_POST['manager_n2']) ? intval($_POST['manager_n2']) : null; // Manager N+2 sélectionné
+        $manager = $manager_n2 ? $manager_n2 : $manager_n1; // Choisir le manager N+2 si défini, sinon N-1
 
         $piece_jointe = '';
         if (isset($_FILES['piece_jointe']) && !empty($_FILES['piece_jointe']['name'])) {
@@ -92,7 +116,7 @@ function frais_submit_frais_action() {
             'description' => $description,
             'piece_jointe' => $piece_jointe,
             'user_id' => $user_id,
-            'manager_id' => $manager_id,
+            'manager_id' => $manager,
             'status' => 'en_attente'
         ));
 

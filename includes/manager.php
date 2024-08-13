@@ -6,14 +6,19 @@ function frais_display_validation_table() {
     $table_frais = $wpdb->prefix . 'frais';  // Nom de votre table des frais
     $table_usermeta = $wpdb->prefix . 'usermeta';  // Nom de votre table usermeta
 
+    // Récupérer les frais en attente pour le manager N-1 et N+2
+    $manager_n1_id = get_user_meta($current_user->ID, 'manager', true); // Manager N-1
+    $current_user_id = $current_user->ID; // Manager N+2
+
   // Récupérer les frais en attente avec le code analytique
 $results = $wpdb->get_results($wpdb->prepare(
     "SELECT f.*, um.meta_value AS analytique
      FROM $table_frais f
      LEFT JOIN $table_usermeta um ON f.user_id = um.user_id AND um.meta_key = 'analytique'
-     WHERE f.status = 'en_attente' AND f.manager_id = %d",
-    $current_user->ID
-), OBJECT);
+     WHERE f.status = 'en_attente' AND (manager_id = %d OR manager_id = %d)",
+      $manager_n1_id,
+      $current_user_id
+  ), OBJECT);
     
     if ($results) {
         echo '<table class="wp-list-table widefat fixed striped">';
