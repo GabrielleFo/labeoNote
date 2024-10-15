@@ -60,8 +60,8 @@ function frais_display_user_frais_table() {
             echo '<td>' . esc_html($row->status) . '</td>';
 
             // Afficher le lien "Modifier" seulement si la note de frais n'est pas validée
-            if ($row->status !== 'validée') {
-                echo '<td><a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id)) . '">Modifier</a></td>';
+            if ($row->status !== 'valide') {
+                echo '<td><a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id) . '#formulaire_edition') . '">Modifier</a></td>';
             } else {
                 echo '<td>-</td>'; // Pas d'action possible si déjà validée
             }
@@ -84,6 +84,7 @@ function frais_display_user_frais_table() {
         // Vérifier si la note de frais n'a pas encore été validée
         if ($frais && $frais->status !== 'valide') {
             ?>
+            <div id="formulaire_edition">
             <form method="post" action="">
                 <h3>Modification de la note de frais</h3>
                 <label for="date">Date:</label>
@@ -101,6 +102,7 @@ function frais_display_user_frais_table() {
                 <input type="hidden" name="frais_id" value="<?php echo esc_attr($frais->id); ?>">
                 <input type="submit" name="update_frais" value="Mettre à jour">
             </form>
+        </div>
             <?php
         } else {
             echo '<p>Impossible de modifier cette note de frais : elle est déjà validée.</p>';
