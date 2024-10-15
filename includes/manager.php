@@ -83,10 +83,11 @@ function validate_frais_action() {
                 $table_name,
                 array(
                     'status' => 'valide',
-                    'n_plus_1_id' => $current_user->display_name
+                    'n_plus_1_id' => $current_user->display_name,
+                    'date_validation' => current_time('mysql') // Ajouter la date de validation
                 ),
                 array('id' => $_GET['id']),
-                array('%s', '%s'),
+                array('%s', '%s', '%s'), // Assurez-vous d'inclure le format de la date
                 array('%d')
             );
             wp_redirect(admin_url('admin.php?page=gestion-des-frais&message=validated'));
