@@ -40,8 +40,22 @@ function frais_user_frais_form() {
                 <td><input type="date" name="date" id="date" required></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="type">Type de frais</label></th>
-                <td><input type="text" name="type" id="type" required></td>
+                <th scope="row"><label for="motif">Motif</label></th>
+                <td>
+                    <select name="motif" id="motif" required onchange="toggleAutreMotif()">
+                        <option value="">Sélectionnez un motif</option>
+                        <option value="mission">Mission</option>
+                        <option value="formation">Formation</option>
+                        <option value="congres">Congrès</option>
+                        <option value="reunion">Réunion</option>
+                        <option value="salon">Salon & Exposition</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </td>
+            </tr>
+            <tr valign="top" id="motif_autre_row" style="display: none;">
+                <th scope="row"><label for="motif_autre">Détail du motif</label></th>
+                <td><input type="text" name="motif_autre" id="motif_autre"></td>
             </tr>
             <tr valign="top">
                 <th scope="row"><label for="montant">Montant</label></th>
@@ -72,6 +86,17 @@ function frais_user_frais_form() {
         </table>
         <?php submit_button('Ajouter Frais'); ?>
     </form>
+    <script type="text/javascript">
+        function toggleAutreMotif() {
+            var motif = document.getElementById('motif').value;
+            var motifAutreRow = document.getElementById('motif_autre_row');
+            if (motif === 'autre') {
+                motifAutreRow.style.display = '';
+            } else {
+                motifAutreRow.style.display = 'none';
+            }
+        }
+    </script>
     <?php
     } else {
         echo '<p>Vous n\'avez pas les permissions nécessaires pour soumettre des frais.</p>';
@@ -80,7 +105,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (is_user_logged_in() && isset($_POST['date'], $_POST['type'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
+    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
@@ -90,7 +115,7 @@ function frais_submit_frais_action() {
         $table_name = $wpdb->prefix . 'frais';
 
         $date = sanitize_text_field($_POST['date']);
-        $type = sanitize_text_field($_POST['type']);
+        $motif = sanitize_text_field($_POST['motif']);
         $montant = floatval($_POST['montant']);
         $description = sanitize_textarea_field($_POST['description']);
         $user_id = get_current_user_id();
@@ -109,9 +134,14 @@ function frais_submit_frais_action() {
 
         $manager_id = intval($_POST['manager']);
 
+         // Si le motif est "autre", concaténer avec le détail du motif
+         if ($motif === 'autre' && !empty($_POST['motif_autre'])) {
+            $motif = 'Autre - ' . sanitize_text_field($_POST['motif_autre']);
+        }
+    // Insertion dans la base de données
         $wpdb->insert($table_name, array(
             'date' => $date,
-            'type' => $type,
+            'type' => $motif,
             'montant' => $montant,
             'description' => $description,
             'piece_jointe' => $piece_jointe,
