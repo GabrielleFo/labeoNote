@@ -48,6 +48,60 @@ function frais_user_frais_form() {
                 <td><input type="time" name="heure_fin" id="heure_fin" required></td>
             </tr>
             <tr valign="top">
+                <th scope="row"><label for="nuitee">Nuitée</label></th>
+                <td>
+                    <input type="checkbox" name="nuitee" id="nuitee" onclick="toggleNuiteeFields()">
+                </td>
+            </tr>
+            <tr valign="top" id="nuitee_fields" style="display: none;">
+                <th scope="row"><label for="type_nuitee">Type de nuitée</label></th>
+                <td>
+                    <select name="type_nuitee" id="type_nuitee">
+                        <option value="">Sélectionnez un type</option>
+                        <option value="etranger">À l'étranger</option>
+                        <option value="province">Province</option>
+                        <option value="grande_ville">Grande ville</option>
+                    </select>
+                </td>
+            </tr>
+            <tr valign="top" id="montant_nuitee_row" style="display: none;">
+                <th scope="row"><label for="montant_nuitee">Montant</label></th>
+                <td><input type="number" step="0.01" name="montant_nuitee" id="montant_nuitee"></td>
+            </tr>
+            <tr valign="top" id="prime_grand_deplacement_row" style="display: none;">
+                <th scope="row"><label for="prime_grand_deplacement">Prime grand déplacement</label></th>
+                <td>
+                    <input type="checkbox" name="prime_grand_deplacement" id="prime_grand_deplacement">
+                </td>
+            </tr>
+            <tr valign="top" id="piece_jointe_nuitee_row" style="display: none;">
+                <th scope="row"><label for="piece_jointe_nuitee">Preuve de facturation</label></th>
+                <td><input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee"></td>
+            </tr>
+
+            <script type="text/javascript">
+                function toggleNuiteeFields() {
+                    var nuitéeChecked = document.getElementById('nuitee').checked;
+                    var nuitéeFields = document.getElementById('nuitee_fields');
+                    var montantNuiteeRow = document.getElementById('montant_nuitee_row');
+                    var primeGrandDeplacementRow = document.getElementById('prime_grand_deplacement_row');
+                    var pieceJointeNuiteeRow = document.getElementById('piece_jointe_nuitee_row');
+                    
+                    if (nuitéeChecked) {
+                        nuitéeFields.style.display = '';
+                        montantNuiteeRow.style.display = '';
+                        primeGrandDeplacementRow.style.display = '';
+                        pieceJointeNuiteeRow.style.display = '';
+                    } else {
+                        nuitéeFields.style.display = 'none';
+                        montantNuiteeRow.style.display = 'none';
+                        primeGrandDeplacementRow.style.display = 'none';
+                        pieceJointeNuiteeRow.style.display = 'none';
+                    }
+                }
+            </script>
+
+            <tr valign="top">
                 <th scope="row"><label for="motif">Motif</label></th>
                 <td>
                     <select name="motif" id="motif" required onchange="toggleAutreMotif()">
@@ -119,12 +173,28 @@ function frais_submit_frais_action() {
             wp_die('Nonce vérification échouée.');
         }
 
+        // Vérifiez si la case nuitée est cochée
+    $nuitee = isset($_POST['nuitee']) ? 1 : 0;
+
+    // Si la nuitée est cochée, vérifiez les autres champs
+    if ($nuitee) {
+        if (!isset($_POST['type_nuitee'], $_POST['montant_nuitee'])) {
+            wp_die('Champs de nuitée manquants.');
+        }
+    }
+
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'frais';
 
         $date = sanitize_text_field($_POST['date']);
         $heure_debut = sanitize_text_field($_POST['heure_debut']);
         $heure_fin = sanitize_text_field($_POST['heure_fin']);
+        
+        $type_nuitee = $nuitee ? sanitize_text_field($_POST['type_nuitee']) : null;
+        $montant_nuitee = $nuitee ? floatval($_POST['montant_nuitee']) : null;
+        $prime_grand_deplacement = isset($_POST['prime_grand_deplacement']) ? 1 : 0;
+
         $motif = sanitize_text_field($_POST['motif']);
         $montant = floatval($_POST['montant']);
         $description = sanitize_textarea_field($_POST['description']);
@@ -142,6 +212,14 @@ function frais_submit_frais_action() {
             }
         }
 
+        $piece_jointe_nuitee = '';
+        if (isset($_FILES['piece_jointe_nuitee']) && !empty($_FILES['piece_jointe_nuitee']['name'])) {
+            $uploaded_nuitee = media_handle_upload('piece_jointe_nuitee', 0);
+            if (!is_wp_error($uploaded_nuitee)) {
+                $piece_jointe_nuitee = wp_get_attachment_url($uploaded_nuitee);
+            }
+        }
+
         $manager_id = intval($_POST['manager']);
 
          // Si le motif est "autre", concaténer avec le détail du motif
@@ -151,6 +229,11 @@ function frais_submit_frais_action() {
     // Insertion dans la base de données
         $wpdb->insert($table_name, array(
             'date' => $date,
+            'nuitee' => $nuitee,
+            'type_nuitee' => $type_nuitee,
+            'montant_nuitee' => $montant_nuitee,
+            'prime_grand_deplacement' => $prime_grand_deplacement,
+            'piece_jointe_nuitee' => $piece_jointe_nuitee,
             'type' => $motif,
             'montant' => $montant,
             'description' => $description,
