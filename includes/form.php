@@ -36,7 +36,7 @@ function frais_user_frais_form() {
             </tr>
 
             <tr valign="top">
-                <th scope="row"><label for="date">Date</label></th>
+                <th scope="row"><label for="date">Date du déplacement</label></th>
                 <td><input type="date" name="date" id="date" required></td>
             </tr>
             <tr valign="top">
@@ -79,28 +79,6 @@ function frais_user_frais_form() {
                 <td><input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee"></td>
             </tr>
 
-            <script type="text/javascript">
-                function toggleNuiteeFields() {
-                    var nuitéeChecked = document.getElementById('nuitee').checked;
-                    var nuitéeFields = document.getElementById('nuitee_fields');
-                    var montantNuiteeRow = document.getElementById('montant_nuitee_row');
-                    var primeGrandDeplacementRow = document.getElementById('prime_grand_deplacement_row');
-                    var pieceJointeNuiteeRow = document.getElementById('piece_jointe_nuitee_row');
-                    
-                    if (nuitéeChecked) {
-                        nuitéeFields.style.display = '';
-                        montantNuiteeRow.style.display = '';
-                        primeGrandDeplacementRow.style.display = '';
-                        pieceJointeNuiteeRow.style.display = '';
-                    } else {
-                        nuitéeFields.style.display = 'none';
-                        montantNuiteeRow.style.display = 'none';
-                        primeGrandDeplacementRow.style.display = 'none';
-                        pieceJointeNuiteeRow.style.display = 'none';
-                    }
-                }
-            </script>
-
             <tr valign="top">
                 <th scope="row"><label for="motif">Motif</label></th>
                 <td>
@@ -119,18 +97,62 @@ function frais_user_frais_form() {
                 <th scope="row"><label for="motif_autre">Détail du motif</label></th>
                 <td><input type="text" name="motif_autre" id="motif_autre"></td>
             </tr>
-            <tr valign="top">
-                <th scope="row"><label for="montant">Montant</label></th>
-                <td><input type="number" step="0.01" name="montant" id="montant" required></td>
-            </tr>
+          
             <tr valign="top">
                 <th scope="row"><label for="description">Lieu de déplacement </label></th>
                 <td><input tupe="text" name="description" id="description"  required></td>
             </tr>
             <tr valign="top">
+    <th scope="row"><label for="repas_midi_type">Type de repas (Midi)</label></th>
+    <td>
+        <select name="repas_midi_type" id="repas_midi_type" required>
+            <option value="">Sélectionnez un type</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="magasin">Achats magasins</option>
+        </select>
+    </td>
+</tr>
+<tr valign="top">
+    <th scope="row"><label for="montant_repas_midi">Montant</label></th>
+    <td><input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" required></td>
+</tr>
+<tr valign="top">
+    <th scope="row"><label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label></th>
+    <td><input type="file" name="piece_jointe_repas_midi" id="piece_jointe_repas_midi"></td>
+</tr>
+
+<!-- Repas du soir, visible uniquement si la case nuitée est cochée -->
+<tr valign="top" id="repas_soir_row" style="display: none;">
+    <th scope="row"><label for="repas_soir_type">Type de repas (Soir)</label></th>
+    <td>
+        <select name="repas_soir_type" id="repas_soir_type">
+            <option value="">Sélectionnez un type</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="magasin">Achats magasins</option>
+        </select>
+    </td>
+</tr>
+<tr valign="top" id="montant_repas_soir_row" style="display: none;">
+    <th scope="row"><label for="montant_repas_soir">Montant</label></th>
+    <td><input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir"></td>
+</tr>
+<tr valign="top" id="piece_jointe_repas_soir_row" style="display: none;">
+    <th scope="row"><label for="piece_jointe_repas_soir">Preuve de dépense (Soir)</label></th>
+    <td><input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir"></td>
+</tr>
+
+            <!-- ------------------------------------------------------------------ -->
+            <tr valign="top">
+                <th scope="row"><label for="montant">Montant</label></th>
+                <td><input type="number" step="0.01" name="montant" id="montant" required></td>
+            </tr>
+            <tr valign="top">
                 <th scope="row"><label for="piece_jointe">Pièce jointe</label></th>
                 <td><input type="file" name="piece_jointe" id="piece_jointe"></td>
             </tr>
+
+
+            <!-- ----------------------------------------------------------------- -->
             <tr valign="top">
             <th scope="row"><label for="manager_n2">Manager (N+2)</label></th>
                 <td>
@@ -158,6 +180,42 @@ function frais_user_frais_form() {
                 motifAutreRow.style.display = 'none';
             }
         }
+
+        function toggleNuiteeFields() {
+        var nuitéeChecked = document.getElementById('nuitee').checked;
+        var nuitéeFields = document.getElementById('nuitee_fields');
+        var montantNuiteeRow = document.getElementById('montant_nuitee_row');
+        var primeGrandDeplacementRow = document.getElementById('prime_grand_deplacement_row');
+        var pieceJointeNuiteeRow = document.getElementById('piece_jointe_nuitee_row');
+
+        var repasSoirRow = document.getElementById('repas_soir_row');
+        var montantRepasSoirRow = document.getElementById('montant_repas_soir_row');
+        var pieceJointeRepasSoirRow = document.getElementById('piece_jointe_repas_soir_row');
+
+        // Affichez ou masquez les champs de nuitée
+        if (nuitéeChecked) {
+            nuitéeFields.style.display = '';
+            montantNuiteeRow.style.display = '';
+            primeGrandDeplacementRow.style.display = '';
+            pieceJointeNuiteeRow.style.display = '';
+
+            // Affichez les champs de repas du soir
+            repasSoirRow.style.display = '';
+            montantRepasSoirRow.style.display = '';
+            pieceJointeRepasSoirRow.style.display = '';
+        } else {
+            nuitéeFields.style.display = 'none';
+            montantNuiteeRow.style.display = 'none';
+            primeGrandDeplacementRow.style.display = 'none';
+            pieceJointeNuiteeRow.style.display = 'none';
+
+            // Masquez les champs de repas du soir
+            repasSoirRow.style.display = 'none';
+            montantRepasSoirRow.style.display = 'none';
+            pieceJointeRepasSoirRow.style.display = 'none';
+        }
+    }
+            
     </script>
     <?php
     } else {
@@ -190,10 +248,37 @@ function frais_submit_frais_action() {
         $date = sanitize_text_field($_POST['date']);
         $heure_debut = sanitize_text_field($_POST['heure_debut']);
         $heure_fin = sanitize_text_field($_POST['heure_fin']);
-        
+
         $type_nuitee = $nuitee ? sanitize_text_field($_POST['type_nuitee']) : null;
         $montant_nuitee = $nuitee ? floatval($_POST['montant_nuitee']) : null;
         $prime_grand_deplacement = isset($_POST['prime_grand_deplacement']) ? 1 : 0;
+
+        $repas_midi_type = sanitize_text_field($_POST['repas_midi_type']);
+        $montant_repas_midi = floatval($_POST['montant_repas_midi']);
+        $piece_jointe_repas_midi = '';
+        if (isset($_FILES['piece_jointe_repas_midi']) && !empty($_FILES['piece_jointe_repas_midi']['name'])) {
+            $uploaded_repas_midi = media_handle_upload('piece_jointe_repas_midi', 0);
+            if (!is_wp_error($uploaded_repas_midi)) {
+                $piece_jointe_repas_midi = wp_get_attachment_url($uploaded_repas_midi);
+            }
+        }
+
+        // Pour le repas du soir, si la nuitée est cochée
+        $repas_soir_type = null;
+        $montant_repas_soir = null;
+        $piece_jointe_repas_soir = null;
+
+        if ($nuitee) {
+            $repas_soir_type = sanitize_text_field($_POST['repas_soir_type']);
+            $montant_repas_soir = floatval($_POST['montant_repas_soir']);
+            if (isset($_FILES['piece_jointe_repas_soir']) && !empty($_FILES['piece_jointe_repas_soir']['name'])) {
+                $uploaded_repas_soir = media_handle_upload('piece_jointe_repas_soir', 0);
+                if (!is_wp_error($uploaded_repas_soir)) {
+                    $piece_jointe_repas_soir = wp_get_attachment_url($uploaded_repas_soir);
+                }
+            }
+        }
+
 
         $motif = sanitize_text_field($_POST['motif']);
         $montant = floatval($_POST['montant']);
@@ -229,12 +314,22 @@ function frais_submit_frais_action() {
     // Insertion dans la base de données
         $wpdb->insert($table_name, array(
             'date' => $date,
+
             'nuitee' => $nuitee,
             'type_nuitee' => $type_nuitee,
             'montant_nuitee' => $montant_nuitee,
             'prime_grand_deplacement' => $prime_grand_deplacement,
             'piece_jointe_nuitee' => $piece_jointe_nuitee,
+
             'type' => $motif,
+
+            'repas_midi_type' => $repas_midi_type,
+            'montant_repas_midi' => $montant_repas_midi,
+            'piece_jointe_repas_midi' => $piece_jointe_repas_midi,
+            'repas_soir_type' => $repas_soir_type,
+            'montant_repas_soir' => $montant_repas_soir,
+            'piece_jointe_repas_soir' => $piece_jointe_repas_soir,
+
             'montant' => $montant,
             'description' => $description,
             'piece_jointe' => $piece_jointe,
