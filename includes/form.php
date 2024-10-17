@@ -190,6 +190,46 @@ function frais_user_frais_form() {
                 <label for="piece_jointe_peage">Preuve de péage :</label>
                 <input type="file" name="piece_jointe_peage" id="piece_jointe_peage">
             </div>
+            <label for="autres_frais_transport">Avez-vous d'autres frais de transport ?</label>
+            
+            <select id="autres_frais_transport" name="autres_frais_transport" onchange="toggleAutresFraisTransport(this.value)">
+                <option value="non">Non</option>
+                <option value="oui">Oui</option>
+            </select>
+
+            <div id="autres_frais_section" style="display: none;">
+                <div id="taxi_fields">
+                    <label for="taxi_montant">Montant frais de taxi :</label>
+                    <input type="number" name="taxi_montant" id="taxi_montant">
+
+                    <label for="piece_jointe_taxi">Preuve frais de taxi :</label>
+                    <input type="file" name="piece_jointe_taxi" id="piece_jointe_taxi">
+                </div>
+
+                <div id="transport_en_commun_fields">
+                    <label for="transport_en_commun_montant">Montant frais de transport en commun :</label>
+                    <input type="number" name="transport_en_commun_montant" id="transport_en_commun_montant">
+
+                    <label for="piece_jointe_transport_en_commun">Preuve frais de transport en commun :</label>
+                    <input type="file" name="piece_jointe_transport_en_commun" id="piece_jointe_transport_en_commun">
+                </div>
+
+                <div id="train_fields">
+                    <label for="train_montant">Montant frais de train :</label>
+                    <input type="number" name="train_montant" id="train_montant">
+
+                    <label for="piece_jointe_train">Preuve frais de train :</label>
+                    <input type="file" name="piece_jointe_train" id="piece_jointe_train">
+                </div>
+
+                <div id="avion_fields">
+                    <label for="avion_montant">Montant frais d'avion :</label>
+                    <input type="number" name="avion_montant" id="avion_montant">
+
+                    <label for="piece_jointe_avion">Preuve frais d'avion :</label>
+                    <input type="file" name="piece_jointe_avion" id="piece_jointe_avion">
+                </div>
+            </div>
 
             <!-- ------------------------------------------------------------------ -->
             <tr valign="top">
@@ -332,6 +372,9 @@ function frais_user_frais_form() {
                 document.getElementById('montant_section').style.display = 'block';
             }
         }
+        function toggleAutresFraisTransport(value) {
+            document.getElementById('autres_frais_section').style.display = value === 'oui' ? 'block' : 'none';
+        }
         
             
     </script>
@@ -415,6 +458,48 @@ function frais_submit_frais_action() {
                $montant_due = $kilometres * $tarifs_puissance[$puissance_fiscale];
            }
        }
+            // Vérifiez si des autres frais de transport sont déclarés
+        if (isset($_POST['autres_frais_transport']) && $_POST['autres_frais_transport'] === 'oui') {
+            // Récupérer le montant et la pièce jointe pour les frais de taxi
+            $taxi_montant = isset($_POST['taxi_montant']) ? floatval($_POST['taxi_montant']) : null;
+            $piece_jointe_taxi = '';
+            if (isset($_FILES['piece_jointe_taxi']) && !empty($_FILES['piece_jointe_taxi']['name'])) {
+                $uploaded_taxi = media_handle_upload('piece_jointe_taxi', 0);
+                if (!is_wp_error($uploaded_taxi)) {
+                    $piece_jointe_taxi = wp_get_attachment_url($uploaded_taxi);
+                }
+            }
+
+            // Récupérer le montant et la pièce jointe pour les frais de transport en commun
+            $transport_en_commun_montant = isset($_POST['transport_en_commun_montant']) ? floatval($_POST['transport_en_commun_montant']) : null;
+            $piece_jointe_transport_en_commun = '';
+            if (isset($_FILES['piece_jointe_transport_en_commun']) && !empty($_FILES['piece_jointe_transport_en_commun']['name'])) {
+                $uploaded_transport_en_commun = media_handle_upload('piece_jointe_transport_en_commun', 0);
+                if (!is_wp_error($uploaded_transport_en_commun)) {
+                    $piece_jointe_transport_en_commun = wp_get_attachment_url($uploaded_transport_en_commun);
+                }
+            }
+
+            // Récupérer le montant et la pièce jointe pour les frais de train
+            $train_montant = isset($_POST['train_montant']) ? floatval($_POST['train_montant']) : null;
+            $piece_jointe_train = '';
+            if (isset($_FILES['piece_jointe_train']) && !empty($_FILES['piece_jointe_train']['name'])) {
+                $uploaded_train = media_handle_upload('piece_jointe_train', 0);
+                if (!is_wp_error($uploaded_train)) {
+                    $piece_jointe_train = wp_get_attachment_url($uploaded_train);
+                }
+            }
+
+            // Récupérer le montant et la pièce jointe pour les frais d'avion
+            $avion_montant = isset($_POST['avion_montant']) ? floatval($_POST['avion_montant']) : null;
+            $piece_jointe_avion = '';
+            if (isset($_FILES['piece_jointe_avion']) && !empty($_FILES['piece_jointe_avion']['name'])) {
+                $uploaded_avion = media_handle_upload('piece_jointe_avion', 0);
+                if (!is_wp_error($uploaded_avion)) {
+                    $piece_jointe_avion = wp_get_attachment_url($uploaded_avion);
+                }
+            }
+        }
 
         $type_nuitee = $nuitee ? sanitize_text_field($_POST['type_nuitee']) : null;
         $montant_nuitee = $nuitee ? floatval($_POST['montant_nuitee']) : null;
@@ -522,7 +607,15 @@ function frais_submit_frais_action() {
 
            
             'peage_montant' => $peage_montant,
-            'piece_jointe_peage' => $piece_jointe_peage
+            'piece_jointe_peage' => $piece_jointe_peage,
+            'taxi_montant' => $taxi_montant,
+            'piece_jointe_taxi' => $piece_jointe_taxi,
+            'transport_en_commun_montant' => $transport_en_commun_montant,
+            'piece_jointe_transport_en_commun' => $piece_jointe_transport_en_commun,
+            'train_montant' => $train_montant,
+            'piece_jointe_train' => $piece_jointe_train,
+            'avion_montant' => $avion_montant,
+            'piece_jointe_avion' => $piece_jointe_avion
         ));
 
         wp_redirect(admin_url('admin.php?page=gestion-des-frais'));
