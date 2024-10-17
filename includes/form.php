@@ -141,7 +141,7 @@ function frais_user_frais_form() {
                 <td><input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir"></td>
             </tr>
 
-            <label for="frais_transport">Avez-vous des frais de transport ?</label>
+            <label for="frais_transport">Avez-vous utilisé un véhicule ? </label>
                 <select id="frais_transport" name="frais_transport" onchange="toggleVehicule(this.value)">
                     <option value="non">Non</option>
                     <option value="oui">Oui</option>
@@ -153,7 +153,7 @@ function frais_user_frais_form() {
                     <option value="">--Sélectionner--</option>
                     <option value="societe">Véhicule de société</option>
                     <option value="personnel">Véhicule personnel</option>
-                    <option value="aucun">Pas de véhicule</option>
+                   
                 </select>
             </div>
             <div id="puissance_section" style="display: none;">
@@ -173,6 +173,22 @@ function frais_user_frais_form() {
             <div id="montant_section" style="display: none;">
                 <label for="montant">Montant dû</label>
                 <input type="text" id="montant" name="montant" readonly>
+            </div>
+            <div id="societe_fields" style="display: none;">
+                <label for="essence_montant">Montant essence/électricité :</label>
+                <input type="number" name="essence_montant" id="essence_montant">
+
+                <label for="piece_jointe_essence">Preuve essence/électricité :</label>
+                <input type="file" name="piece_jointe_essence" id="piece_jointe_essence">
+            </div>
+
+            <!-- Section Péage, visible pour les deux types de véhicules -->
+            <div id="peage_fields" style="display: none;">
+                <label for="peage_montant">Montant du péage :</label>
+                <input type="number" name="peage_montant" id="peage_montant">
+
+                <label for="piece_jointe_peage">Preuve de péage :</label>
+                <input type="file" name="piece_jointe_peage" id="piece_jointe_peage">
             </div>
 
             <!-- ------------------------------------------------------------------ -->
@@ -249,7 +265,9 @@ function frais_user_frais_form() {
                     pieceJointeRepasSoirRow.style.display = 'none';
                 }
         }
+
         function toggleVehicule(value) {
+            // Afficher ou masquer la section "Type de véhicule"
             if (value === "oui") {
                 document.getElementById('vehicule_section').style.display = 'block';
             } else {
@@ -257,17 +275,31 @@ function frais_user_frais_form() {
                 document.getElementById('puissance_section').style.display = 'none';
                 document.getElementById('kilometres_section').style.display = 'none';
                 document.getElementById('montant_section').style.display = 'none';
+                document.getElementById('societe_fields').style.display = 'none';
+                document.getElementById('peage_fields').style.display = 'none';
             }
         }
 
         function togglePuissance(value) {
+            // Réinitialisation des sections pour éviter d'afficher les champs incorrects
+            document.getElementById('puissance_section').style.display = 'none';
+            document.getElementById('kilometres_section').style.display = 'none';
+            document.getElementById('montant_section').style.display = 'none';
+            document.getElementById('societe_fields').style.display = 'none';
+            document.getElementById('peage_fields').style.display = 'none';
+
             if (value === "personnel") {
+
+                // Afficher les champs spécifiques au véhicule personnel
                 document.getElementById('puissance_section').style.display = 'block';
                 document.getElementById('kilometres_section').style.display = 'block';
-            } else {
-                document.getElementById('puissance_section').style.display = 'none';
-                document.getElementById('kilometres_section').style.display = 'none';
-                document.getElementById('montant_section').style.display = 'none';
+                document.getElementById('peage_fields').style.display = 'block'; // Champ commun péage
+
+            } else if (value === "societe") {
+
+                // Afficher les champs spécifiques au véhicule de société
+                document.getElementById('societe_fields').style.display = 'block';
+                document.getElementById('peage_fields').style.display = 'block'; // Champ commun péage
             }
         }
 
@@ -300,6 +332,7 @@ function frais_user_frais_form() {
                 document.getElementById('montant_section').style.display = 'block';
             }
         }
+        
             
     </script>
     <?php
@@ -336,22 +369,52 @@ function frais_submit_frais_action() {
 
         $frais_transport = isset($_POST['frais_transport']) ? sanitize_text_field($_POST['frais_transport']) : 'non';
         $type_vehicule = ($frais_transport === 'oui' && isset($_POST['vehicule'])) ? sanitize_text_field($_POST['vehicule']) : null;
-        $puissance_fiscale = ($type_vehicule === 'personnel' && isset($_POST['puissance'])) ? sanitize_text_field($_POST['puissance']) : null;
-        $kilometres = ($puissance_fiscale && isset($_POST['kilometres'])) ? intval($_POST['kilometres']) : null;
+        
 
-        // Calculer le montant dû en fonction des kilomètres et de la puissance fiscale
-        $tarifs_puissance = [
-            '3' => 0.529,
-            '4' => 0.606,
-            '5' => 0.636,
-            '6' => 0.665,
-            '7' => 0.697
-        ];
-        $montant_due = null;
-        if ($kilometres && $puissance_fiscale) {
-            $montant_due = $kilometres * $tarifs_puissance[$puissance_fiscale];
+        // Initialiser les montants
+        $peage_montant = null;
+        $piece_jointe_peage = null;
+        $essence_montant = null;
+        $piece_jointe_essence = null;
+
+        // Récupérer le montant pour l'essence/électricité
+        if ($type_vehicule === 'societe') {
+            $essence_montant = isset($_POST['essence_montant']) ? floatval($_POST['essence_montant']) : null;
+            if (isset($_FILES['piece_jointe_essence']) && !empty($_FILES['piece_jointe_essence']['name'])) {
+                $uploaded_essence = media_handle_upload('piece_jointe_essence', 0);
+                if (!is_wp_error($uploaded_essence)) {
+                    $piece_jointe_essence = wp_get_attachment_url($uploaded_essence);
+                }
+            }
         }
 
+        // Récupérer le montant du péage
+        if ($type_vehicule) {
+            $peage_montant = isset($_POST['peage_montant']) ? floatval($_POST['peage_montant']) : null;
+            if (isset($_FILES['piece_jointe_peage']) && !empty($_FILES['piece_jointe_peage']['name'])) {
+                $uploaded_peage = media_handle_upload('piece_jointe_peage', 0);
+                if (!is_wp_error($uploaded_peage)) {
+                    $piece_jointe_peage = wp_get_attachment_url($uploaded_peage);
+                }
+            }
+        }
+        // Calculer le montant dû en fonction des kilomètres et de la puissance fiscale
+       
+       $montant_due = null;
+       if ($type_vehicule === 'personnel' && isset($_POST['puissance'], $_POST['kilometres'])) {
+           $puissance_fiscale = sanitize_text_field($_POST['puissance']);
+           $kilometres = intval($_POST['kilometres']);
+           $tarifs_puissance = [
+               '3' => 0.529,
+               '4' => 0.606,
+               '5' => 0.636,
+               '6' => 0.665,
+               '7' => 0.697
+           ];
+           if ($kilometres > 0 && isset($tarifs_puissance[$puissance_fiscale])) {
+               $montant_due = $kilometres * $tarifs_puissance[$puissance_fiscale];
+           }
+       }
 
         $type_nuitee = $nuitee ? sanitize_text_field($_POST['type_nuitee']) : null;
         $montant_nuitee = $nuitee ? floatval($_POST['montant_nuitee']) : null;
@@ -452,7 +515,14 @@ function frais_submit_frais_action() {
             'type_vehicule' => $type_vehicule,
             'puissance_fiscale' => $puissance_fiscale,
             'kilometres' => $kilometres,
-            'montant_due' => $montant_due
+            'montant_due' => $montant_due,
+     
+            'essence_montant' => $essence_montant,
+            'piece_jointe_essence' => $piece_jointe_essence,
+
+           
+            'peage_montant' => $peage_montant,
+            'piece_jointe_peage' => $piece_jointe_peage
         ));
 
         wp_redirect(admin_url('admin.php?page=gestion-des-frais'));
