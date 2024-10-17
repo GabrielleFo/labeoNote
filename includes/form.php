@@ -40,6 +40,14 @@ function frais_user_frais_form() {
                 <td><input type="date" name="date" id="date" required></td>
             </tr>
             <tr valign="top">
+                <th scope="row"><label for="heure_debut">Heure de début</label></th>
+                <td><input type="time" name="heure_debut" id="heure_debut" required></td>
+            </tr>
+            <tr valign="top">
+                <th scope="row"><label for="heure_fin">Heure de fin</label></th>
+                <td><input type="time" name="heure_fin" id="heure_fin" required></td>
+            </tr>
+            <tr valign="top">
                 <th scope="row"><label for="motif">Motif</label></th>
                 <td>
                     <select name="motif" id="motif" required onchange="toggleAutreMotif()">
@@ -62,8 +70,8 @@ function frais_user_frais_form() {
                 <td><input type="number" step="0.01" name="montant" id="montant" required></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="description">Description</label></th>
-                <td><textarea name="description" id="description" rows="5" cols="30" required></textarea></td>
+                <th scope="row"><label for="description">Lieu de déplacement </label></th>
+                <td><input tupe="text" name="description" id="description"  required></td>
             </tr>
             <tr valign="top">
                 <th scope="row"><label for="piece_jointe">Pièce jointe</label></th>
@@ -105,7 +113,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['montant'], $_POST['description'],$_POST['manager'])) {
+    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['montant'], $_POST['description'],$_POST['manager'],$_POST['heure_debut'],$_POST['heure_fin'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
@@ -115,6 +123,8 @@ function frais_submit_frais_action() {
         $table_name = $wpdb->prefix . 'frais';
 
         $date = sanitize_text_field($_POST['date']);
+        $heure_debut = sanitize_text_field($_POST['heure_debut']);
+        $heure_fin = sanitize_text_field($_POST['heure_fin']);
         $motif = sanitize_text_field($_POST['motif']);
         $montant = floatval($_POST['montant']);
         $description = sanitize_textarea_field($_POST['description']);
@@ -147,7 +157,9 @@ function frais_submit_frais_action() {
             'piece_jointe' => $piece_jointe,
             'user_id' => $user_id,
             'manager_id' => $manager,
-            'status' => 'en_attente'
+            'status' => 'en_attente',
+            'heure_debut' => $heure_debut, 
+            'heure_fin' => $heure_fin 
         ));
 
         wp_redirect(admin_url('admin.php?page=gestion-des-frais'));
