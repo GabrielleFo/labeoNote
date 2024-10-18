@@ -99,13 +99,13 @@ function frais_user_frais_form() {
             </tr>
           
             <tr valign="top">
-                <th scope="row"><label for="description">Lieu de déplacement </label></th>
-                <td><input tupe="text" name="description" id="description"  required></td>
+                <th scope="row"><label for="lieu_deplacement">Lieu de déplacement </label></th>
+                <td><input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  required></td>
             </tr>
             <tr valign="top">
                 <th scope="row"><label for="repas_midi_type">Type de repas (Midi)</label></th>
                 <td>
-                    <select name="repas_midi_type" id="repas_midi_type" required>
+                    <select name="repas_midi_type" id="repas_midi_type" >
                         <option value="">Sélectionnez un type</option>
                         <option value="restaurant">Restaurant</option>
                         <option value="magasin">Achats magasins</option>
@@ -114,7 +114,7 @@ function frais_user_frais_form() {
             </tr>
             <tr valign="top">
                 <th scope="row"><label for="montant_repas_midi">Montant repas (midi)</label></th>
-                <td><input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" required></td>
+                <td><input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" ></td>
             </tr>
             <tr valign="top">
                 <th scope="row"><label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label></th>
@@ -231,18 +231,6 @@ function frais_user_frais_form() {
                 </div>
             </div>
 
-            <!-- ------------------------------------------------------------------ -->
-            <tr valign="top">
-                <th scope="row"><label for="montant">Montant</label></th>
-                <td><input type="number" step="0.01" name="montant" id="montant" required></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="piece_jointe">Pièce jointe</label></th>
-                <td><input type="file" name="piece_jointe" id="piece_jointe"></td>
-            </tr>
-
-
-            <!-- ----------------------------------------------------------------- -->
             <tr valign="top">
             <th scope="row"><label for="manager_n2">Manager (N+2)</label></th>
                 <td>
@@ -386,7 +374,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['montant'], $_POST['description'],$_POST['manager'],$_POST['heure_debut'],$_POST['heure_fin'])) {
+    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['lieu_deplacement'],$_POST['manager'],$_POST['heure_debut'],$_POST['heure_fin'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
@@ -535,21 +523,15 @@ function frais_submit_frais_action() {
 
 
         $motif = sanitize_text_field($_POST['motif']);
-        $montant = floatval($_POST['montant']);
-        $description = sanitize_textarea_field($_POST['description']);
+ 
+        $lieu_description = sanitize_textarea_field($_POST['lieu_deplacement']);
         $user_id = get_current_user_id();
         $manager_n1 = get_user_meta($user_id, 'manager', true); // Manager N-1
 
         $manager_n2 = isset($_POST['manager_n2']) ? intval($_POST['manager_n2']) : null; // Manager N+2 sélectionné
         $manager = $manager_n2 ? $manager_n2 : $manager_n1; // Choisir le manager N+2 si défini, sinon N-1
 
-        $piece_jointe = '';
-        if (isset($_FILES['piece_jointe']) && !empty($_FILES['piece_jointe']['name'])) {
-            $uploaded = media_handle_upload('piece_jointe', 0);
-            if (!is_wp_error($uploaded)) {
-                $piece_jointe = wp_get_attachment_url($uploaded);
-            }
-        }
+      
 
         $piece_jointe_nuitee = '';
         if (isset($_FILES['piece_jointe_nuitee']) && !empty($_FILES['piece_jointe_nuitee']['name'])) {
@@ -589,9 +571,9 @@ function frais_submit_frais_action() {
             'montant_repas_soir' => $montant_repas_soir,
             'piece_jointe_repas_soir' => $piece_jointe_repas_soir,
 
-            'montant' => $montant,
-            'description' => $description,
-            'piece_jointe' => $piece_jointe,
+       
+            'lieu_deplacement' => $lieu_description,
+           
             'user_id' => $user_id,
             'manager_id' => $manager,
             'status' => 'en_attente',
