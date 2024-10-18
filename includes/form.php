@@ -113,7 +113,7 @@ function frais_user_frais_form() {
                 </td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="montant_repas_midi">Montant</label></th>
+                <th scope="row"><label for="montant_repas_midi">Montant repas (midi)</label></th>
                 <td><input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" required></td>
             </tr>
             <tr valign="top">
@@ -133,7 +133,7 @@ function frais_user_frais_form() {
                 </td>
             </tr>
             <tr valign="top" id="montant_repas_soir_row" style="display: none;">
-                <th scope="row"><label for="montant_repas_soir">Montant</label></th>
+                <th scope="row"><label for="montant_repas_soir">Montant repas ( soir)</label></th>
                 <td><input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir"></td>
             </tr>
             <tr valign="top" id="piece_jointe_repas_soir_row" style="display: none;">
@@ -405,7 +405,9 @@ function frais_submit_frais_action() {
 
         global $wpdb;
         $table_name = $wpdb->prefix . 'frais';
-
+        $analytique = sanitize_text_field($_POST['analytique']);
+      
+       
         $date = sanitize_text_field($_POST['date']);
         $heure_debut = sanitize_text_field($_POST['heure_debut']);
         $heure_fin = sanitize_text_field($_POST['heure_fin']);
@@ -568,8 +570,10 @@ function frais_submit_frais_action() {
 
     // Insertion dans la base de données
         $wpdb->insert($table_name, array(
-            'date' => $date,
 
+            'date' => $date,
+          'code_analytique' => $analytique,
+           
             'nuitee' => $nuitee,
             'type_nuitee' => $type_nuitee,
             'montant_nuitee' => $montant_nuitee,
