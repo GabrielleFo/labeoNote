@@ -1,146 +1,263 @@
 <?php
-
+ global $wpdb;
 // Afficher le formulaire
 function frais_user_frais_form() {
     if (is_user_logged_in()) {
     ?>
-    <h2>Ajouter un frais</h2>
-    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
+
+ 
+    <form method="post" class="formulaire" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
         <input type="hidden" name="action" value="submit_frais">
         <?php wp_nonce_field('frais_nonce_action', 'frais_nonce'); ?>
-        <table class="form-table">
-            <tr valign="top">
-            <th scope="row"><label for="analytique">Code Analytique</label></th>
-            <td>
-                <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
-            </td>
-            </tr>
-            <?php
-            // Récupérer l'ID du manager
-            $manager_id = get_user_meta(get_current_user_id(), 'manager', true);
+        <h2 class="notes">Note de frais </h2>
+        <style>
 
-            // Récupérer le display_name du manager
-            $manager_name = '';
-            if ($manager_id) {
-                $manager_data = get_userdata($manager_id);
-                if ($manager_data) {
-                    $manager_name = $manager_data->display_name;
-                }
-            }
-            ?>
-            <tr valign="top">
-            <th scope="row"><label for="manager">Manager</label></th>
-            <td>
-                <input type="text" name="manager" id="manager" value="<?php echo esc_attr($manager_name); ?>" readonly>
-            </td>
-            </tr>
+        .notes {
+            text-align: center; /* Centre le texte */
+            font-size: 24px; /* Augmente la taille de la police */
+            font-weight: bold; /* Rend le texte en gras */
+            color: #333; /* Change la couleur du texte (ajustez selon vos préférences) */
+            margin-bottom: 20px; /* Ajoute un espace en dessous du titre */
+        }
+        .formulaire {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid grey;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
 
-            <tr valign="top">
-                <th scope="row"><label for="date">Date du déplacement</label></th>
-                <td><input type="date" name="date" id="date" required></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="heure_debut">Heure de début</label></th>
-                <td><input type="time" name="heure_debut" id="heure_debut" required></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="heure_fin">Heure de fin</label></th>
-                <td><input type="time" name="heure_fin" id="heure_fin" required></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="nuitee">Nuitée</label></th>
-                <td>
-                    <input type="checkbox" name="nuitee" id="nuitee" onclick="toggleNuiteeFields()">
-                </td>
-            </tr>
-            <tr valign="top" id="nuitee_fields" style="display: none;">
-                <th scope="row"><label for="type_nuitee">Type de nuitée</label></th>
-                <td>
-                    <select name="type_nuitee" id="type_nuitee">
-                        <option value="">Sélectionnez un type</option>
-                        <option value="etranger">À l'étranger</option>
-                        <option value="province">Province</option>
-                        <option value="grande_ville">Grande ville</option>
+        fieldset {
+            border: 1px solid #A0A7C4;
+            border-radius: 5px;
+            margin: 20px 0;
+            padding: 10px;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="checkbox"],
+        input[type="file"] {
+            margin: 10px 0;
+        }
+       
+        .time-fields,.motif-lieu-fields,.info{
+            display: flex;
+            justify-content: space-between; /* Espace égal entre les champs */
+            margin: 5px 0; /* Marge en haut et en bas */
+        }
+
+        .time-fields div,.motif-lieu-fields,.info{
+            flex: 1; /* Chaque champ prend un espace égal */
+            margin-right: 10px; /* Espace entre les champs */
+        }
+
+        .time-fields div:last-child,.motif-lieu-fields {
+            margin-right: 0; /* Pas d'espace à droite du dernier champ */
+        }
+        input[type="checkbox"] {
+            margin-left: 10px; /* Ajustez la valeur selon vos besoins */
+        }
+        input[type="date"],
+        input[type="time"]{
+            width: 110px; /* Ajustez cette valeur selon vos préférences */
+            padding: 5px; /* Ajustez le remplissage si nécessaire */
+            margin: 0 5px; /* Espace autour des champs */
+            box-sizing: border-box; /* Inclut le padding dans la largeur totale */
+        }
+        input[type="text"],
+        select{
+            width: 170px; /* Ajustez cette valeur selon vos préférences */
+            padding: 5px; /* Ajustez le remplissage si nécessaire */
+            margin: 0 5px; /* Espace autour des champs */
+            box-sizing: border-box; /* Inclut le padding dans la largeur totale */
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center; /* Aligne verticalement les éléments */
+            
+        }
+    </style>
+        
+            <fieldset>
+                <legend class="analytique" >Informations personnelles</legend>
+
+                <div class="code_analytique">
+                    <label for="analytique" class="analytique">Code Analytique ( à modifier si besoin)</label>
+                        <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+                    
+                        <?php
+                        // Récupérer l'ID du manager
+                        $manager_id = get_user_meta(get_current_user_id(), 'manager', true);
+
+                        // Récupérer le display_name du manager
+                        $manager_name = '';
+                        if ($manager_id) {
+                            $manager_data = get_userdata($manager_id);
+                            if ($manager_data) {
+                                $manager_name = $manager_data->display_name;
+                            }
+                        }
+                        ?>
+                    </div>
+                    <div class="info">
+                    <label for="manager">Manager</label>
+                            <input type="text" name="manager" id="manager" value="<?php echo esc_attr($manager_name); ?>" readonly>
+                            <label for="manager_n2">Manager N+2 ( Si manager absent)</label>
+               
+                    <select name="manager_n2" id="manager_n2">
+                        <option value="">Aucun</option>
+                        <?php
+                        $managers_n2 = get_users(array('role' => 'manager_n2'));
+                        foreach ($managers_n2 as $manager_n2) {
+                            echo '<option value="' . esc_attr($manager_n2->ID) . '">' . esc_html($manager_n2->display_name) . '</option>';
+                        }
+                        ?>
                     </select>
-                </td>
-            </tr>
-            <tr valign="top" id="montant_nuitee_row" style="display: none;">
-                <th scope="row"><label for="montant_nuitee">Montant</label></th>
-                <td><input type="number" step="0.01" name="montant_nuitee" id="montant_nuitee"></td>
-            </tr>
-            <tr valign="top" id="prime_grand_deplacement_row" style="display: none;">
-                <th scope="row"><label for="prime_grand_deplacement">Prime grand déplacement</label></th>
-                <td>
-                    <input type="checkbox" name="prime_grand_deplacement" id="prime_grand_deplacement">
-                </td>
-            </tr>
-            <tr valign="top" id="piece_jointe_nuitee_row" style="display: none;">
-                <th scope="row"><label for="piece_jointe_nuitee">Preuve de facturation</label></th>
-                <td><input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee"></td>
-            </tr>
+                    </div>    
+                <div class="time-fields">
+                        <label for="date">Date du déplacement</label>
+                            <input type="date" name="date" id="date" required>
+                    
+                        
+                        <label for="heure_debut">Heure de début</label>
+                            <input type="time" name="heure_debut" id="heure_debut" required>
+                    
+                        
+                        <label for="heure_fin">Heure de fin</label>
+                            <input type="time" name="heure_fin" id="heure_fin" required>
+                </div>
+                <div class="motif-lieu-fields">
+                        <label for="motif">Motif</label></th>
+                
+                        <select name="motif" id="motif" required onchange="toggleAutreMotif()">
+                            <option value="">Sélectionnez un motif</option>
+                            <option value="mission">Mission</option>
+                            <option value="formation">Formation</option>
+                            <option value="congres">Congrès</option>
+                            <option value="reunion">Réunion</option>
+                            <option value="salon">Salon & Exposition</option>
+                            <option value="autre">Autre</option>
+                        </select>
+           
+     
+                        <div id="motif_autre_row" style="display: none;">
+                            <label for="motif_autre">Détail du motif</label>
+                            <input type="text" name="motif_autre" id="motif_autre">
+                        </div>
+      
+        
+                        <label for="lieu_deplacement">Lieu de déplacement </label>
+                        <input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  required>
+                </div>
+                <div class="checkbox-label">
+                
+                        <label for="nuitee">Nuitée</label>
+                        <input type="checkbox" name="nuitee" id="nuitee" onclick="toggleNuiteeFields()">
+                </div>               
+            </fieldset>
+            
+            <fieldset>
+                    <legend>Frais déjeuner</legend>
+                        <label for="repas_midi_type">Type de repas (Midi)</label>
+                        
+                            <select name="repas_midi_type" id="repas_midi_type" >
+                                <option value="">Sélectionnez un type</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="magasin">Achats magasins</option>
+                            </select>
+                        
+                        <label for="montant_repas_midi">Montant repas (midi)</label>
+                        <input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" >
+                
+                        <label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label>
+                        <input type="file" name="piece_jointe_repas_midi" id="piece_jointe_repas_midi">
+           
+                </fieldset>
+                
+                    
+                    <!-- Repas du soir, visible uniquement si la case nuitée est cochée -->
+                    <div id="repas_soir_row" style="display: none;">
+                
+                        <legend> Frais diner</legend>
+                        <label for="repas_soir_type">Type de repas (Soir)</label>
+                    
+                            <select name="repas_soir_type" id="repas_soir_type">
+                                <option value="">Sélectionnez un type</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="magasin">Achats magasins</option>
+                            </select>
+                        
+                    </div>
 
-            <tr valign="top">
-                <th scope="row"><label for="motif">Motif</label></th>
-                <td>
-                    <select name="motif" id="motif" required onchange="toggleAutreMotif()">
-                        <option value="">Sélectionnez un motif</option>
-                        <option value="mission">Mission</option>
-                        <option value="formation">Formation</option>
-                        <option value="congres">Congrès</option>
-                        <option value="reunion">Réunion</option>
-                        <option value="salon">Salon & Exposition</option>
-                        <option value="autre">Autre</option>
-                    </select>
-                </td>
-            </tr>
-            <tr valign="top" id="motif_autre_row" style="display: none;">
-                <th scope="row"><label for="motif_autre">Détail du motif</label></th>
-                <td><input type="text" name="motif_autre" id="motif_autre"></td>
-            </tr>
-          
-            <tr valign="top">
-                <th scope="row"><label for="lieu_deplacement">Lieu de déplacement </label></th>
-                <td><input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  required></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="repas_midi_type">Type de repas (Midi)</label></th>
-                <td>
-                    <select name="repas_midi_type" id="repas_midi_type" >
-                        <option value="">Sélectionnez un type</option>
-                        <option value="restaurant">Restaurant</option>
-                        <option value="magasin">Achats magasins</option>
-                    </select>
-                </td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="montant_repas_midi">Montant repas (midi)</label></th>
-                <td><input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" ></td>
-            </tr>
-            <tr valign="top">
-                <th scope="row"><label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label></th>
-                <td><input type="file" name="piece_jointe_repas_midi" id="piece_jointe_repas_midi"></td>
-            </tr>
+                    <div id="montant_repas_soir_row" style="display: none;">
+                        <th scope="row"><label for="montant_repas_soir">Montant repas ( soir)</label></th>
+                        <td><input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir"></td>
+                    </div>
 
-            <!-- Repas du soir, visible uniquement si la case nuitée est cochée -->
-            <tr valign="top" id="repas_soir_row" style="display: none;">
-                <th scope="row"><label for="repas_soir_type">Type de repas (Soir)</label></th>
-                <td>
-                    <select name="repas_soir_type" id="repas_soir_type">
-                        <option value="">Sélectionnez un type</option>
-                        <option value="restaurant">Restaurant</option>
-                        <option value="magasin">Achats magasins</option>
-                    </select>
-                </td>
-            </tr>
-            <tr valign="top" id="montant_repas_soir_row" style="display: none;">
-                <th scope="row"><label for="montant_repas_soir">Montant repas ( soir)</label></th>
-                <td><input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir"></td>
-            </tr>
-            <tr valign="top" id="piece_jointe_repas_soir_row" style="display: none;">
-                <th scope="row"><label for="piece_jointe_repas_soir">Preuve de dépense (Soir)</label></th>
-                <td><input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir"></td>
-            </tr>
+                    <div  id="piece_jointe_repas_soir_row" style="display: none;">
+                    <label for="piece_jointe_repas_soir">Preuve de dépense (Soir)</label>
+                        <input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir">
+                    
+                    </div>
 
+              
+                    <div id="nuitee_fields" style="display: none;">
+         
+                   <legend>Hébergement </legend>
+
+                   <label for="type_nuitee">Type de nuitée</label>
+                       
+                           <select name="type_nuitee" id="type_nuitee">
+                               <option value="">Sélectionnez un type</option>
+                               <option value="etranger">À l'étranger</option>
+                               <option value="province">Province</option>
+                               <option value="grande_ville">Grande ville</option>
+                           </select>
+               </div>
+               
+               <div  id="montant_nuitee_row" style="display: none;">
+
+                   <label for="montant_nuitee">Montant</label>
+                       <input type="number" step="0.01" name="montant_nuitee" id="montant_nuitee">
+               </div>
+           
+               <div id="prime_grand_deplacement_row" style="display: none;">
+
+                   <label for="prime_grand_deplacement">Prime grand déplacement</label>
+               
+                       <input type="checkbox" name="prime_grand_deplacement" id="prime_grand_deplacement">
+               
+               </div>
+      
+               <div id="piece_jointe_nuitee_row" style="display: none;">
+
+                   <label for="piece_jointe_nuitee">Preuve de facturation</label>
+                   <input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee">
+               
+               </div>
+        </fieldset>
             <label for="frais_transport">Avez-vous utilisé un véhicule ? </label>
                 <select id="frais_transport" name="frais_transport" onchange="toggleVehicule(this.value)">
                     <option value="non">Non</option>
@@ -231,22 +348,7 @@ function frais_user_frais_form() {
                 </div>
             </div>
 
-            <tr valign="top">
-            <th scope="row"><label for="manager_n2">Manager (N+2)</label></th>
-                <td>
-                <select name="manager_n2" id="manager_n2">
-            <option value="">Aucun</option>
-            <?php
-            $managers_n2 = get_users(array('role' => 'manager_n2'));
-            foreach ($managers_n2 as $manager_n2) {
-                echo '<option value="' . esc_attr($manager_n2->ID) . '">' . esc_html($manager_n2->display_name) . '</option>';
-            }
-            ?>
-        </select>
-                </td>
-            </tr>
-        </table>
-        <?php submit_button('Ajouter Frais'); ?>
+            <?php submit_button('Ajouter Frais'); ?>
     </form>
     <script type="text/javascript">
         function toggleAutreMotif() {
