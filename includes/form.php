@@ -151,7 +151,7 @@ function frais_user_frais_form() {
                 <div class="motif-lieu-fields">
                         <label for="motif">Motif</label></th>
                 
-                        <select name="motif" id="motif" required onchange="toggleAutreMotif()">
+                        <select name="motif" id="motif"  onchange="toggleAutreMotif()">
                             <option value="">Sélectionnez un motif</option>
                             <option value="mission">Mission</option>
                             <option value="formation">Formation</option>
@@ -169,7 +169,7 @@ function frais_user_frais_form() {
       
         
                         <label for="lieu_deplacement">Lieu de déplacement </label>
-                        <input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  required>
+                        <input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  >
                 </div>
                 <div class="checkbox-label">
                 
@@ -476,7 +476,7 @@ function frais_user_frais_form() {
 
 // Traitement du formulaire pour ajouter un frais
 function frais_submit_frais_action() {
-    if (is_user_logged_in() && isset($_POST['date'], $_POST['motif'], $_POST['lieu_deplacement'],$_POST['manager'],$_POST['heure_debut'],$_POST['heure_fin'])) {
+    if (is_user_logged_in() && isset($_POST['date'],$_POST['manager'],$_POST['heure_debut'],$_POST['heure_fin'])) {
         // Vérifiez le nonce
         if (!isset($_POST['frais_nonce']) || !wp_verify_nonce($_POST['frais_nonce'], 'frais_nonce_action')) {
             wp_die('Nonce vérification échouée.');
