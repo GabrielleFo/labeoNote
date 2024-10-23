@@ -7,6 +7,9 @@ function frais_display_user_frais_table() {
 
     // Traitement de la mise à jour
     if (isset($_POST['update_frais'])) {
+
+
+
         $frais_id = intval($_POST['frais_id']);
         $date = sanitize_text_field($_POST['date']);
         $analytique = sanitize_text_field($_POST['analytique']);
@@ -14,8 +17,10 @@ function frais_display_user_frais_table() {
         $heure_fin = sanitize_text_field($_POST['heure_fin']);
         $motif = sanitize_text_field($_POST['type']);
         $montant_repas_midi = sanitize_text_field($_POST['montant_repas_midi']);
-
+        $repas_midi_type = sanitize_text_field($_POST['repas_midi_type']);
+        $repas_soir_type = sanitize_text_field($_POST['repas_soir_type']);
         $montant_repas_soir = sanitize_text_field($_POST['montant_repas_soir']);
+        $type_nuitee = sanitize_text_field($_POST['type_nuitee']);
         $montant_nuitee= sanitize_text_field($_POST['montant_nuitee']);
         $essence_montant = sanitize_text_field($_POST['essence_montant']);
         $peage_montant = sanitize_text_field($_POST['peage_montant']);
@@ -32,8 +37,11 @@ function frais_display_user_frais_table() {
             'heure_debut'=> $heure_debut,
             'heure_fin'=> $heure_fin,
             'code_analytique' => $analytique,
+            'repas_midi_type'=>$repas_midi_type,
             'montant_repas_midi' => $montant_repas_midi,
+            'repas_soir_type'=>$repas_soir_type,
             'montant_repas_soir' => $montant_repas_soir,
+            'type_nuitee'=>$type_nuitee,
             'montant_nuitee' => $montant_nuitee,
             'heure_debut' => $heure_debut, 
             'heure_fin' => $heure_fin ,
@@ -69,6 +77,8 @@ function frais_display_user_frais_table() {
     $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE user_id = %d", $user_id), OBJECT);
 
     if ($results) {
+       
+       
         ?>
         <p class="tableau">Vos notes de frais</p>
         <div id="tableau_edition">
@@ -137,8 +147,6 @@ function frais_display_user_frais_table() {
             $montant_du -= 4.80;
         }
 
-
-
         // Montant dû pour nuitée
         if ($row->montant_nuitee > 0) {
 
@@ -152,7 +160,6 @@ function frais_display_user_frais_table() {
             }
         }
 
-      
         // Ajouter tous les autres montants déclarés au montant dû
        
         $montant_du += (float)$row->montant_due;
@@ -168,8 +175,6 @@ function frais_display_user_frais_table() {
             $montant_du += 45;
         }
 
-      
-
         // S'assurer que le montant dû ne devient pas négatif
         if ($montant_du < 0) {
             $montant_du = 0;
@@ -181,11 +186,42 @@ function frais_display_user_frais_table() {
 
             // Afficher le lien "Modifier" seulement si la note de frais n'est pas validée
             if ($row->status !== 'valide') {
-                echo '<td><a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id) . '#formulaire_edition') . '">Modifier</a></td>';
+                // suppression de la note de frais 
+                if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+                    $id = intval($_GET['id']);
+                    
+                    // Vérifiez ici si l'ID est valide et que l'enregistrement n'est pas validé
+                    $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
+    
+                    if ($row && $row->status !== 'valide') {
+                     
+                        $wpdb->delete($table_name, array('id' => $id));
+                        
+                        // Redirigez après la suppression
+                        wp_redirect(admin_url('admin.php?page=gestion-des-frais&message=deleted'));
+                        exit;
+                    } else {
+                        // Gestion des erreurs, par exemple rediriger avec un message d'erreur
+                        wp_redirect(admin_url('admin.php?page=gestion-des-frais&message=error'));
+                        exit;
+                    }
+                }
+                
+                echo '<td>
+                <a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id) . '#formulaire_edition') . '"><i class="fas fa-pencil-alt"></i></a>
+                <a href="' . admin_url('admin.php?page=gestion-des-frais&action=delete&id=' . esc_attr($row->id)) . '" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette note de frais ?\');">
+                <i class="fas fa-trash-alt"></i></a>
+                
+                </td>';
             } else {
-                echo '<td>-</td>'; // Pas d'action possible si déjà validée
+                echo '<td>
+                <a href="' . admin_url('admin-post.php?action=download_excel&id=' . esc_attr($row->id)) . '" target="_blank">
+                <i class="fas fa-file-excel"></i> Exporter en Excel
+            </a>
+                </td>';
             }
             echo '</tr>';
+         
         }
         echo '</tbody>';
         echo '</table>';
@@ -194,6 +230,13 @@ function frais_display_user_frais_table() {
         echo '<p>Aucun frais trouvé.</p>';
     }
      // Affichage du message de confirmation
+     if (isset($_GET['message'])) {
+        if ($_GET['message'] === 'deleted') {
+            echo '<div class="notice notice-success is-dismissible"><p>La note de frais a été supprimée avec succès.</p></div>';
+        } elseif ($_GET['message'] === 'error') {
+            echo '<div class="notice notice-error is-dismissible"><p>Erreur lors de la suppression de la note de frais.</p></div>';
+        }
+    }
      echo $message;
 
     // Mode édition d'une note de frais (Affiché uniquement en mode édition)
@@ -204,6 +247,21 @@ function frais_display_user_frais_table() {
         // Vérifier si la note de frais n'a pas encore été validée
         if ($frais && $frais->status !== 'valide') {
             ?>
+
+            <style>
+                #formulaire_edition {
+                    max-width: 600px;
+                    margin: 50px auto;
+                    padding: 20px;
+                    border: 1px solid #ccc;
+                    border-radius: 10px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                }
+
+                
+    
+            </style>
             <div id="formulaire_edition">
             <form method="post" action="">
                 <h3>Modification de la note de frais</h3>
@@ -216,7 +274,7 @@ function frais_display_user_frais_table() {
                         <label for="heure_fin">Heure de fin</label>
                         <input type="time" name="heure_fin" id="heure_fin" value="<?php echo esc_attr($frais->heure_fin ? $frais->heure_fin : ''); ?>">
             <!-- champ analystique  -->
-            <label for="analytique" class="analytique">Code Analytique ( à modifier si besoin)</label>
+            <label for="analytique" class="analytique">Code Analytique </label>
                 <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
 
             <!-- Champ pour lemotif en lecture seulement -->
@@ -225,14 +283,50 @@ function frais_display_user_frais_table() {
 
                 <label for="motif">Lieu</label>
                 <input type="text" name="lieu" value="<?php echo esc_attr($frais->lieu_deplacement); ?> "readonly>
+                
+              <!-- Récupérer les données depuis la base de données -->
+              <?php $repas_midi_type = $frais->repas_midi_type;  ?>
+             <!-- Champ pour le type de repas midi -->
+
+             <label for="repas_midi_type">Type de repas (Midi)</label>
+            <select name="repas_midi_type" id="repas_midi_type">
+                <option value="">Sélectionnez un type</option>
+                <option value="restaurant" <?php echo ($repas_midi_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
+                <option value="magasin" <?php echo ($repas_midi_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
+            </select>
 
             <!-- Champ pour le montant des repas midi -->
             <label for="montant_repas_midi">Montant repas midi:</label>
                 <input type="number" name="montant_repas_midi" value="<?php echo esc_attr($frais->montant_repas_midi); ?>">
      
+          
+             <!-- Récupérer le type de repas soir depuis la base de données -->
+            <?php $repas_soir_type = $frais->repas_soir_type; ?>
+
+            <!-- Champ pour le type de repas soir -->
+            <label for="repas_soir_type">Type de repas (Soir)</label>
+            <select name="repas_soir_type" id="repas_soir_type">
+                <option value="">Sélectionnez un type</option>
+                <option value="restaurant" <?php echo ($repas_soir_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
+                <option value="magasin" <?php echo ($repas_soir_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
+            </select>
+
             <!-- Champ pour le montant des repas soir -->
             <label for="montant_repas_soir">Montant repas soir:</label>
                 <input type="number" name="montant_repas_soir" value="<?php echo esc_attr($frais->montant_repas_soir); ?>">
+
+
+             <!-- Récupérer le type d'hôtel depuis la base de données -->
+            <?php $type_nuitee = $frais->type_nuitee;  ?>
+
+             <!-- Champ pour le type d'hôtel -->
+            <label for="type_nuitee">Type d'hôtel</label>
+            <select name="type_nuitee" id="type_nuitee">
+                <option value="">Sélectionnez un type</option>
+                <option value="etranger" <?php echo ($type_nuitee === 'etranger') ? 'selected' : ''; ?>>Etranger</option>
+                <option value="province" <?php echo ($type_nuitee === 'province') ? 'selected' : ''; ?>>Province</option>
+                <option value="grande_ville" <?php echo ($type_nuitee === 'grande_ville') ? 'selected' : ''; ?>>Grande ville</option>
+            </select>
 
             <!-- Champ pour le montant des nuitées -->
             <label for="montant_nuitee">Montant nuitée:</label>
@@ -260,10 +354,16 @@ function frais_display_user_frais_table() {
                 <input type="hidden" name="frais_id" value="<?php echo esc_attr($frais->id); ?>">
                 <input type="submit" name="update_frais" value="Mettre à jour">
             </form>
+
+
         </div>
             <?php
         } else {
             echo '<p>Impossible de modifier cette note de frais : elle est déjà validée.</p>';
         }
+
+       
     }
 }
+?>
+

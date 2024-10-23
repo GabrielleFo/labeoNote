@@ -24,6 +24,9 @@ include_once plugin_dir_path(__FILE__) . 'includes/utilisateurs.php';
 include_once plugin_dir_path(__FILE__) . 'includes/manager.php';
 include_once plugin_dir_path(__FILE__) . 'includes/comptabilite.php';
 include_once plugin_dir_path(__FILE__) . 'includes/utilisateurs.php';
+include_once plugin_dir_path(__FILE__) . 'includes/generate-pdf.php';
+
+
 
 
 
