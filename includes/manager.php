@@ -22,31 +22,60 @@ function frais_display_validation_table() {
     if ($results) {
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php?action=batch_validate_frais')) . '">';
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th><input type="checkbox" id="select_all" /></th><th>Date</th><th>Type de frais</th><th>Montant</th><th>Description</th><th>Collaborateur</th><th>Code analytique</th><th>Action</th></tr></thead>';
+        echo '<thead><tr><th><input type="checkbox" id="select_all" /><th>Code analytique</th><th>Date</th><th>Type de frais</th><th>Lieu du déplacement</th><th>heure début </th><th>heure fin</th><th>Collaborateur</th><th>Action</th></tr></thead>';
         echo '<tbody>';
         foreach ($results as $row) {
             $user = get_userdata($row->user_id);
             echo '<tr>';
             echo '<td><input type="checkbox" name="frais_ids[]" value="' . esc_attr($row->id) . '" /></td>'; // Case à cocher
+            echo '<td>' . esc_html($row->analytique) . '</td>';  // Affichage du code analytique
             echo '<td>' . esc_html($row->date) . '</td>';
             echo '<td>' . esc_html($row->type) . '</td>';
-            echo '<td>' . esc_html($row->montant) . '</td>';
-            echo '<td>' . esc_html($row->description) . '</td>';
+            echo '<td>' . esc_html($row->lieu_deplacement) . '</td>';
+            echo '<td>' . esc_html($row->heure_debut) . '</td>';
+            echo '<td>' . esc_html($row->heure_fin) . '</td>';
+       
             echo '<td>' . esc_html($user->display_name) . '</td>';
-            echo '<td>' . esc_html($row->analytique) . '</td>';  // Affichage du code analytique
+          
             echo '<td>
                     <a href="' . esc_url(admin_url('admin-post.php?action=validate_frais&id=' . $row->id)) . '" style="color: green; font-size: 20px;" title="Valider">&#10004;</a>
                     <a href="' . esc_url(admin_url('admin-post.php?action=refuse_frais&id=' . $row->id)) . '" style="color: red; font-size: 15px;" title="Refuser">&#10060;</a>
+                   
+                    <a href="' . admin_url('admin-post.php?action=download_excel&id=' . esc_attr($row->id)) . '" target="_blank">
+                    <i class="fas fa-file-excel fa-2x "></i> 
+                    </a>
+                   
                   </td>';
             echo '</tr>';
         }
         echo '</tbody>';
         echo '</table>';
+        ?>
+        <style>
+            .selection-valider,.selection-annuler {
+                margin: 10px; 
+                color: white;
+                padding: 10px 20px; 
+                font-size: 16px; 
+                border: none; 
+                border-radius: 5px; 
+                cursor: pointer; 
+             }
 
+            .selection-valider {
+                background-color: #007cba; 
+            }
+
+            .selection-annuler{
+                background-color: #dc3232;
+            }
+            
+        </style>
+        <?php
         // Boutons pour validation ou refus des notes sélectionnées
-        echo '<input type="submit" name="batch_validate" value="Valider sélectionnées" class="button button-primary" />';
-        echo '<input type="submit" name="batch_refuse" value="Refuser sélectionnées" class="button button-secondary" />';
-        
+        echo '<input type="submit" name="batch_validate" value="Valider sélectionnées" class="selection-valider" />';
+        echo '<input type="submit" name="batch_refuse" value="Refuser sélectionnées" class="selection-annuler" />';
+       
         echo '</form>';
     } else {
         echo '<p class="attente">Aucun frais en attente de validation.</p>';

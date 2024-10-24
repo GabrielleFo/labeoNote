@@ -9,7 +9,7 @@ function download_excel() {
         $id = intval($_GET['id']);
         
         // Récupérer uniquement la note de frais correspondant à l'ID fourni
-        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d AND status = 'valide'", $id));
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d ", $id));
 
         if ($row) {
             // Préparation de l'export
