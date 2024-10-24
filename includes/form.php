@@ -253,7 +253,7 @@ function frais_user_frais_form() {
       
                <div id="piece_jointe_nuitee_row" style="display: none;">
 
-                   <label for="piece_jointe_nuitee">Preuve de facturation</label>
+                   <label for="piece_jointe_nuitee">Preuve d'hotel</label>
                    <input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee">
                
                </div>

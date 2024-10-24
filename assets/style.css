@@ -4,8 +4,8 @@
 } */
 .tableau{
     font-size: 30px; 
-    color:blueviolet;
-    border:1px solid blueviolet;
+ 
+    border:1px solid black;
     text-align:center ;
 }
 .attente{

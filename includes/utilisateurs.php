@@ -80,7 +80,7 @@ function frais_display_user_frais_table() {
        
        
         ?>
-        <p class="tableau">Vos notes de frais</p>
+        <p class="tableau">Recapitulatif de vos notes de frais</p>
         <div id="tableau_edition">
         <?php
         echo '<table class="wp-list-table widefat fixed striped">';
@@ -186,6 +186,17 @@ function frais_display_user_frais_table() {
 
             // Afficher le lien "Modifier" seulement si la note de frais n'est pas validée
             if ($row->status !== 'valide') {
+                ?>
+                <style>
+                     .custom-icon {
+                    font-size: 30px; /* Taille personnalisée */
+                    color: green; /* Couleur personnalisée */
+                    }
+                    .trash{
+                        color:red;
+                    }
+                </style>
+                <?php
                 // suppression de la note de frais 
                 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
                     $id = intval($_GET['id']);
@@ -208,15 +219,15 @@ function frais_display_user_frais_table() {
                 }
                 
                 echo '<td>
-                <a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id) . '#formulaire_edition') . '"><i class="fas fa-pencil-alt"></i></a>
+                <a href="' . admin_url('admin.php?page=gestion-des-frais&action=edit&id=' . esc_attr($row->id) . '#formulaire_edition') . '"><i class="fas fa-pencil-alt custom-icon"></i></a>
                 <a href="' . admin_url('admin.php?page=gestion-des-frais&action=delete&id=' . esc_attr($row->id)) . '" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette note de frais ?\');">
-                <i class="fas fa-trash-alt"></i></a>
+                <i class="fas fa-trash-alt fa-2x trash"></i></a>
                 
                 </td>';
             } else {
                 echo '<td>
                 <a href="' . admin_url('admin-post.php?action=download_excel&id=' . esc_attr($row->id)) . '" target="_blank">
-                <i class="fas fa-file-excel"></i> Exporter en Excel
+                <i class="fas fa-file-excel fa-2x "></i> 
             </a>
                 </td>';
             }
@@ -258,6 +269,7 @@ function frais_display_user_frais_table() {
                     background-color: #f9f9f9;
                     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                 }
+               
 
                 
     
