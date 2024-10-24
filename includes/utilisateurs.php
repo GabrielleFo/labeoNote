@@ -269,99 +269,127 @@ function frais_display_user_frais_table() {
                     background-color: #f9f9f9;
                     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                 }
-               
+                .form-row {
+                    display: flex; /* Utiliser Flexbox pour l'alignement */
+                    align-items: center; /* Aligner verticalement les éléments */
+                    margin-bottom: 15px; /* Espacement entre les lignes */
+                }
 
+                .form-row label {
+                    flex: 1; /* Équilibre l'espace entre les labels et les champs */
+                    margin-right: 10px; /* Espacement entre le label et le champ */
+                }
+
+                .form-row input,
+                .form-row select {
+                    flex: 2; /* Plus d'espace pour les champs */
+                }
+                .analytique {
+                    margin-bottom: 10px;
+                    display: flex; /* Utiliser Flexbox pour le centrage */
+                    justify-content: center; /* Centrer horizontalement */
+                    align-items: center; /* Centrer verticalement */
+                }
                 
     
             </style>
             <div id="formulaire_edition">
             <form method="post" action="">
                 <h3>Modification de la note de frais</h3>
-                <label for="date">Date:</label>
-            <input type="date" name="date" value="<?php echo esc_attr($frais->date); ?>" required>
-            <label for="heure_debut">Heure de début</label>
-                            <input type="time" name="heure_debut" id="heure_debut" value="<?php echo esc_attr($frais->heure_debut ? $frais->heure_debut : ''); ?>">
-                           
-                        
-                        <label for="heure_fin">Heure de fin</label>
+                <div class="form-row">
+                    <label for="date">Date:</label>
+                        <input type="date" name="date" value="<?php echo esc_attr($frais->date); ?>" required>
+                    <label for="heure_debut">Heure de début</label>
+                        <input type="time" name="heure_debut" id="heure_debut" value="<?php echo esc_attr($frais->heure_debut ? $frais->heure_debut : ''); ?>"> 
+                    <label for="heure_fin">Heure de fin</label>
                         <input type="time" name="heure_fin" id="heure_fin" value="<?php echo esc_attr($frais->heure_fin ? $frais->heure_fin : ''); ?>">
-            <!-- champ analystique  -->
-            <label for="analytique" class="analytique">Code Analytique </label>
-                <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+                </div>
+                <div class="analytique">
+                    <!-- champ analystique  -->
+                    <label for="analytique" class="analytique">Code Analytique </label>
+                        <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+                </div>        
+                <div class="form-row">
+                <!-- Champ pour lemotif en lecture seulement -->
+                    <label for="motif">Motif</label>
+                    <input type="text" name="motif" value="<?php echo esc_attr($frais->type); ?> "readonly>
 
-            <!-- Champ pour lemotif en lecture seulement -->
-                <label for="motif">Motif</label>
-                <input type="text" name="motif" value="<?php echo esc_attr($frais->type); ?> "readonly>
+                    <label for="motif">Lieu</label>
+                    <input type="text" name="lieu" value="<?php echo esc_attr($frais->lieu_deplacement); ?> "readonly>
+                </div>
+                <div class="form-row">
+                    <!-- Récupérer les données depuis la base de données -->
+                    <?php $repas_midi_type = $frais->repas_midi_type;  ?>
+                    <!-- Champ pour le type de repas midi -->
 
-                <label for="motif">Lieu</label>
-                <input type="text" name="lieu" value="<?php echo esc_attr($frais->lieu_deplacement); ?> "readonly>
-                
-              <!-- Récupérer les données depuis la base de données -->
-              <?php $repas_midi_type = $frais->repas_midi_type;  ?>
-             <!-- Champ pour le type de repas midi -->
+                    <label for="repas_midi_type">Type de repas (Midi)</label>
+                    <select name="repas_midi_type" id="repas_midi_type">
+                        <option value="">Sélectionnez un type</option>
+                        <option value="restaurant" <?php echo ($repas_midi_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
+                        <option value="magasin" <?php echo ($repas_midi_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
+                    </select>
 
-             <label for="repas_midi_type">Type de repas (Midi)</label>
-            <select name="repas_midi_type" id="repas_midi_type">
-                <option value="">Sélectionnez un type</option>
-                <option value="restaurant" <?php echo ($repas_midi_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
-                <option value="magasin" <?php echo ($repas_midi_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
-            </select>
-
-            <!-- Champ pour le montant des repas midi -->
-            <label for="montant_repas_midi">Montant repas midi:</label>
-                <input type="number" name="montant_repas_midi" value="<?php echo esc_attr($frais->montant_repas_midi); ?>">
-     
+                    <!-- Champ pour le montant des repas midi -->
+                    <label for="montant_repas_midi">Montant repas midi:</label>
+                        <input type="number" name="montant_repas_midi" value="<?php echo esc_attr($frais->montant_repas_midi); ?>">
+                </div>
+                <div class="form-row">
           
-             <!-- Récupérer le type de repas soir depuis la base de données -->
-            <?php $repas_soir_type = $frais->repas_soir_type; ?>
+                    <!-- Récupérer le type de repas soir depuis la base de données -->
+                    <?php $repas_soir_type = $frais->repas_soir_type; ?>
 
-            <!-- Champ pour le type de repas soir -->
-            <label for="repas_soir_type">Type de repas (Soir)</label>
-            <select name="repas_soir_type" id="repas_soir_type">
-                <option value="">Sélectionnez un type</option>
-                <option value="restaurant" <?php echo ($repas_soir_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
-                <option value="magasin" <?php echo ($repas_soir_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
-            </select>
+                    <!-- Champ pour le type de repas soir -->
+                    <label for="repas_soir_type">Type de repas (Soir)</label>
+                    <select name="repas_soir_type" id="repas_soir_type">
+                        <option value="">Sélectionnez un type</option>
+                        <option value="restaurant" <?php echo ($repas_soir_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
+                        <option value="magasin" <?php echo ($repas_soir_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
+                    </select>
 
-            <!-- Champ pour le montant des repas soir -->
-            <label for="montant_repas_soir">Montant repas soir:</label>
-                <input type="number" name="montant_repas_soir" value="<?php echo esc_attr($frais->montant_repas_soir); ?>">
+                    <!-- Champ pour le montant des repas soir -->
+                    <label for="montant_repas_soir">Montant repas soir:</label>
+                        <input type="number" name="montant_repas_soir" value="<?php echo esc_attr($frais->montant_repas_soir); ?>">
+                </div>
+                <div class="form-row">
+                    <!-- Récupérer le type d'hôtel depuis la base de données -->
+                    <?php $type_nuitee = $frais->type_nuitee;  ?>
 
+                    <!-- Champ pour le type d'hôtel -->
+                    <label for="type_nuitee">Type d'hôtel</label>
+                    <select name="type_nuitee" id="type_nuitee">
+                        <option value="">Sélectionnez un type</option>
+                        <option value="etranger" <?php echo ($type_nuitee === 'etranger') ? 'selected' : ''; ?>>Etranger</option>
+                        <option value="province" <?php echo ($type_nuitee === 'province') ? 'selected' : ''; ?>>Province</option>
+                        <option value="grande_ville" <?php echo ($type_nuitee === 'grande_ville') ? 'selected' : ''; ?>>Grande ville</option>
+                    </select>
 
-             <!-- Récupérer le type d'hôtel depuis la base de données -->
-            <?php $type_nuitee = $frais->type_nuitee;  ?>
+                    <!-- Champ pour le montant des nuitées -->
+                    <label for="montant_nuitee">Montant nuitée:</label>
+                        <input type="number" name="montant_nuitee" value="<?php echo esc_attr($frais->montant_nuitee); ?>">
+                </div>
+                <div class="form-row">
+                    <!-- Autres champs pour les frais -->
+                    <label for="essence_montant">Montant essence:</label>
+                    <input type="number" name="essence_montant" value="<?php echo esc_attr($frais->essence_montant); ?>">
 
-             <!-- Champ pour le type d'hôtel -->
-            <label for="type_nuitee">Type d'hôtel</label>
-            <select name="type_nuitee" id="type_nuitee">
-                <option value="">Sélectionnez un type</option>
-                <option value="etranger" <?php echo ($type_nuitee === 'etranger') ? 'selected' : ''; ?>>Etranger</option>
-                <option value="province" <?php echo ($type_nuitee === 'province') ? 'selected' : ''; ?>>Province</option>
-                <option value="grande_ville" <?php echo ($type_nuitee === 'grande_ville') ? 'selected' : ''; ?>>Grande ville</option>
-            </select>
+                    <label for="peage_montant">Montant péage:</label>
+                    <input type="number" name="peage_montant" value="<?php echo esc_attr($frais->peage_montant); ?>">
+                </div>
+                <div class="form-row">
+                    <label for="taxi_montant">Montant taxi:</label>
+                    <input type="number" name="taxi_montant" value="<?php echo esc_attr($frais->taxi_montant); ?>">
 
-            <!-- Champ pour le montant des nuitées -->
-            <label for="montant_nuitee">Montant nuitée:</label>
-                <input type="number" name="montant_nuitee" value="<?php echo esc_attr($frais->montant_nuitee); ?>">
+                    <label for="transport_en_commun_montant">Montant transport en commun:</label>
+                    <input type="number" name="transport_en_commun_montant" value="<?php echo esc_attr($frais->transport_en_commun_montant); ?>">
+                </div>
+                <div class="form-row">
 
-            <!-- Autres champs pour les frais -->
-            <label for="essence_montant">Montant essence:</label>
-            <input type="number" name="essence_montant" value="<?php echo esc_attr($frais->essence_montant); ?>">
+                    <label for="train_montant">Montant train:</label>
+                    <input type="number" name="train_montant" value="<?php echo esc_attr($frais->train_montant); ?>">
 
-            <label for="peage_montant">Montant péage:</label>
-            <input type="number" name="peage_montant" value="<?php echo esc_attr($frais->peage_montant); ?>">
-
-            <label for="taxi_montant">Montant taxi:</label>
-            <input type="number" name="taxi_montant" value="<?php echo esc_attr($frais->taxi_montant); ?>">
-
-            <label for="transport_en_commun_montant">Montant transport en commun:</label>
-            <input type="number" name="transport_en_commun_montant" value="<?php echo esc_attr($frais->transport_en_commun_montant); ?>">
-
-            <label for="train_montant">Montant train:</label>
-            <input type="number" name="train_montant" value="<?php echo esc_attr($frais->train_montant); ?>">
-
-            <label for="avion_montant">Montant avion:</label>
-            <input type="number" name="avion_montant" value="<?php echo esc_attr($frais->avion_montant); ?>">
+                    <label for="avion_montant">Montant avion:</label>
+                    <input type="number" name="avion_montant" value="<?php echo esc_attr($frais->avion_montant); ?>">
+                </div>
 
                 <input type="hidden" name="frais_id" value="<?php echo esc_attr($frais->id); ?>">
                 <input type="submit" name="update_frais" value="Mettre à jour">

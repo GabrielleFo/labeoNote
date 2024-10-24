@@ -2,11 +2,17 @@
 
     color:blue!important;
 } */
-.tableau{
+.tableau {
     font-size: 30px; 
- 
-    border:1px solid black;
-    text-align:center ;
+    border: 1px solid black;
+    text-align: center;
+    border-collapse: collapse; /* Pour un rendu propre des bordures */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Ombre */
+    margin: 20px; /* Espacement autour du tableau */
+}
+
+.tableau th, .tableau td {
+    padding: 15px; /* Espacement intérieur des cellules */
 }
 .attente{
     font-size: 30px; 
