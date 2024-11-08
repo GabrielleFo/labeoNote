@@ -96,46 +96,100 @@ function frais_user_frais_form() {
         .checkbox-label {
             display: flex;
             align-items: center; /* Aligne verticalement les éléments */
+            margin:10px;
             
         }
+        .repas{
+            display: flex;
+            padding-left:30px;
+          
+        }
+        #repas_midi_row{
+            margin-right:30px;
+        }
+        #nuitee_fields,#transport_fields{
+            display:flex;
+        }
+        #nuitee_fields.show, #transport_fields.show {
+            display: flex;          /* Affichage en ligne des fieldsets */
+            gap: 20px;              /* Espacement entre les fieldsets */
+        }
+
+   
+        #nuitee_fields input[type="number"] { 
+            flex: 0 0 150px; width: 150px; 
+        }
+        .check,
+        .checkbox-label {
+            display: flex;
+            align-items: center;  /* Aligne verticalement les éléments */
+            margin-bottom: 10px;   /* Espacement entre chaque groupe */
+        }
+        .code_analytique {
+            display: flex;           /* Utiliser flexbox pour aligner les éléments sur une ligne */
+            align-items: center;     /* Aligner les éléments verticalement au centre */
+            margin-bottom: 10px;     /* Ajouter un espace entre chaque ligne de champs */
+        }
+
+        label {
+            margin-right: 10px;  /* Espacement entre le label et le champ */
+        }
+
+        input[type="checkbox"] {
+            margin-left: 5px; /* Pour ajouter un petit espace à gauche de la case à cocher */
+        }
+        
     </style>
         
             <fieldset>
                 <legend class="analytique" >Informations personnelles</legend>
+                <div class="check">
+                    <div class="code_analytique">
+                        <label for="analytique" class="analytique">Code Analytique </label>
+                            <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
+                        
+                            <?php
+                            // Récupérer l'ID du manager
+                            $manager_id = get_user_meta(get_current_user_id(), 'manager', true);
 
-                <div class="code_analytique">
-                    <label for="analytique" class="analytique">Code Analytique ( à modifier si besoin)</label>
-                        <input type="text" name="analytique" id="analytique" value="<?php echo esc_attr(get_user_meta(get_current_user_id(), 'analytique', true)); ?>" required>
-                    
-                        <?php
-                        // Récupérer l'ID du manager
-                        $manager_id = get_user_meta(get_current_user_id(), 'manager', true);
-
-                        // Récupérer le display_name du manager
-                        $manager_name = '';
-                        if ($manager_id) {
-                            $manager_data = get_userdata($manager_id);
-                            if ($manager_data) {
-                                $manager_name = $manager_data->display_name;
+                            // Récupérer le display_name du manager
+                            $manager_name = '';
+                            if ($manager_id) {
+                                $manager_data = get_userdata($manager_id);
+                                if ($manager_data) {
+                                    $manager_name = $manager_data->display_name;
+                                }
                             }
-                        }
-                        ?>
+                            ?>
+                        </div>
+                        <div class="checkbox-label">
+                    
+                            <label for="nuitee">Nuitée</label>
+                            <input type="checkbox" name="nuitee" id="nuitee" onclick="toggleNuiteeFields()">
+                        
+                        </div> 
+                        <div class="checkbox-label">
+                            <label for="transport_checkbox">Transport</label>
+                            <input type="checkbox" name="transport_checkbox" id="transport_checkbox" onclick="toggleTransportFieldset()">
+                        </div>
                     </div>
-                    <div class="info">
-                    <label for="manager">Manager</label>
-                            <input type="text" name="manager" id="manager" value="<?php echo esc_attr($manager_name); ?>" readonly>
-                            <label for="manager_n2">Manager N+2 ( Si manager absent)</label>
-               
-                    <select name="manager_n2" id="manager_n2">
-                        <option value="">Aucun</option>
-                        <?php
-                        $managers_n2 = get_users(array('role' => 'manager_n2'));
-                        foreach ($managers_n2 as $manager_n2) {
-                            echo '<option value="' . esc_attr($manager_n2->ID) . '">' . esc_html($manager_n2->display_name) . '</option>';
-                        }
-                        ?>
-                    </select>
-                    </div>    
+                        <div class="info">
+                            <label for="manager">Manager</label>
+                                    <input type="text" name="manager" id="manager" value="<?php echo esc_attr($manager_name); ?>" readonly>
+                                    <label for="manager_n2">Manager N+2 ( Si manager absent)</label>
+                    
+                            <select name="manager_n2" id="manager_n2">
+                                <option value="">Aucun</option>
+                                <?php
+                                $managers_n2 = get_users(array('role' => 'manager_n2'));
+                                foreach ($managers_n2 as $manager_n2) {
+                                    echo '<option value="' . esc_attr($manager_n2->ID) . '">' . esc_html($manager_n2->display_name) . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>  
+                  
+                        
                 <div class="time-fields">
                         <label for="date">Date du déplacement</label>
                             <input type="date" name="date" id="date" required>
@@ -171,63 +225,58 @@ function frais_user_frais_form() {
                         <label for="lieu_deplacement">Lieu de déplacement </label>
                         <input tupe="text" name="lieu_deplacement" id="lieu_deplacement"  >
                 </div>
-                <div class="checkbox-label">
-                
-                        <label for="nuitee">Nuitée</label>
-                        <input type="checkbox" name="nuitee" id="nuitee" onclick="toggleNuiteeFields()">
-                </div>               
+               
+              
+
             </fieldset>
             
             <fieldset>
-                    <legend>Frais déjeuner</legend>
-                        <label for="repas_midi_type">Type de repas (Midi)</label>
-                        
-                            <select name="repas_midi_type" id="repas_midi_type" >
-                                <option value="">Sélectionnez un type</option>
-                                <option value="restaurant">Restaurant</option>
-                                <option value="magasin">Achats magasins</option>
-                            </select>
-                        
-                        <label for="montant_repas_midi">Montant repas (midi)</label>
-                        <input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" >
                 
-                        <label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label>
-                        <input type="file" name="piece_jointe_repas_midi" id="piece_jointe_repas_midi">
-           
+                    <legend>Frais repas</legend>
+                    <div class="repas">
+                        <div id="repas_midi_row" >
+                            <label for="repas_midi_type">Type de repas (Midi)</label>
+                            
+                                <select name="repas_midi_type" id="repas_midi_type" >
+                                    <option value="">Sélectionnez un type</option>
+                                    <option value="restaurant">Restaurant</option>
+                                    <option value="magasin">Achats magasins</option>
+                                </select>
+                            
+                            <label for="montant_repas_midi">Montant repas (midi)</label>
+                            <input type="number" step="0.01" name="montant_repas_midi" id="montant_repas_midi" >
+                    
+                            <label for="piece_jointe_repas_midi">Preuve de dépense (Midi)</label>
+                            <input type="file" name="piece_jointe_repas_midi" id="piece_jointe_repas_midi">
+
+                        </div>    
+                        <div id="repas_soir_row" >
+                
+                            <label for="repas_soir_type">Type de repas (Soir)</label>
+                        
+                                <select name="repas_soir_type" id="repas_soir_type">
+                                    <option value="">Sélectionnez un type</option>
+                                    <option value="restaurant">Restaurant</option>
+                                    <option value="magasin">Achats magasins</option>
+                                </select>
+
+                  
+                            <label for="montant_repas_soir">Montant repas ( soir)</label>
+                            <input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir">
+                    
+
+                    
+                            <label for="piece_jointe_repas_soir">Preuve de dépense (Soir)</label>
+                            <input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir">
+                        </div>
+                    </div>
                 </fieldset>
                 
-                    
-                    <!-- Repas du soir, visible uniquement si la case nuitée est cochée -->
-                    <div id="repas_soir_row" style="display: none;">
-                
-                        <legend> Frais diner</legend>
-                        <label for="repas_soir_type">Type de repas (Soir)</label>
-                    
-                            <select name="repas_soir_type" id="repas_soir_type">
-                                <option value="">Sélectionnez un type</option>
-                                <option value="restaurant">Restaurant</option>
-                                <option value="magasin">Achats magasins</option>
-                            </select>
-                        
-                    </div>
+                <div id="nuitee_fields" style="display: none;">
+                    <fieldset>   
+                        <legend>Hébergement </legend>
 
-                    <div id="montant_repas_soir_row" style="display: none;">
-                        <th scope="row"><label for="montant_repas_soir">Montant repas ( soir)</label></th>
-                        <td><input type="number" step="0.01" name="montant_repas_soir" id="montant_repas_soir"></td>
-                    </div>
-
-                    <div  id="piece_jointe_repas_soir_row" style="display: none;">
-                    <label for="piece_jointe_repas_soir">Preuve de dépense (Soir)</label>
-                        <input type="file" name="piece_jointe_repas_soir" id="piece_jointe_repas_soir">
-                    
-                    </div>
-
-              
-                    <div id="nuitee_fields" style="display: none;">
-         
-                   <legend>Hébergement </legend>
-
-                   <label for="type_nuitee">Type de nuitée</label>
+                         <label for="type_nuitee">Type de nuitée</label>
                        
                            <select name="type_nuitee" id="type_nuitee">
                                <option value="">Sélectionnez un type</option>
@@ -235,118 +284,114 @@ function frais_user_frais_form() {
                                <option value="province">Province</option>
                                <option value="grande_ville">Grande ville</option>
                            </select>
-               </div>
                
-               <div  id="montant_nuitee_row" style="display: none;">
+                        <label for="montant_nuitee">Montant</label>
+                        <input type="number" step="0.01" name="montant_nuitee" id="montant_nuitee">
 
-                   <label for="montant_nuitee">Montant</label>
-                       <input type="number" step="0.01" name="montant_nuitee" id="montant_nuitee">
-               </div>
-           
-               <div id="prime_grand_deplacement_row" style="display: none;">
-
-                   <label for="prime_grand_deplacement">Prime grand déplacement</label>
+                        <label for="piece_jointe_nuitee">Preuve d'hotel</label>
+                        <input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee">
+             
+                        <label for="prime_grand_deplacement">Prime grand déplacement</label>
+                        <input type="checkbox" name="prime_grand_deplacement" id="prime_grand_deplacement">
                
-                       <input type="checkbox" name="prime_grand_deplacement" id="prime_grand_deplacement">
-               
-               </div>
-      
-               <div id="piece_jointe_nuitee_row" style="display: none;">
-
-                   <label for="piece_jointe_nuitee">Preuve d'hotel</label>
-                   <input type="file" name="piece_jointe_nuitee" id="piece_jointe_nuitee">
-               
-               </div>
-        </fieldset>
-            <label for="frais_transport">Avez-vous utilisé un véhicule ? </label>
-                <select id="frais_transport" name="frais_transport" onchange="toggleVehicule(this.value)">
-                    <option value="non">Non</option>
-                    <option value="oui">Oui</option>
-                </select>
-
-            <div id="vehicule_section" style="display: none;">
-                <label for="vehicule">Type de véhicule</label>
-                <select id="vehicule" name="vehicule" onchange="togglePuissance(this.value)">
-                    <option value="">--Sélectionner--</option>
-                    <option value="societe">Véhicule de société</option>
-                    <option value="personnel">Véhicule personnel</option>
-                   
-                </select>
-            </div>
-            <div id="puissance_section" style="display: none;">
-                <label for="puissance">Puissance fiscale</label>
-                <select id="puissance" name="puissance" onchange="calculMontant()">
-                    <option value="3">3 CV et moins (0.529 €/km)</option>
-                    <option value="4">4 CV (0.606 €/km)</option>
-                    <option value="5">5 CV (0.636 €/km)</option>
-                    <option value="6">6 CV (0.665 €/km)</option>
-                    <option value="7">7 CV et plus (0.697 €/km)</option>
-                </select>
-            </div>
-            <div id="kilometres_section" style="display: none;">
-                <label for="kilometres">Nombre de kilomètres parcourus</label>
-                <input type="number" id="kilometres" name="kilometres" min="0" onchange="calculMontant()">
-            </div>
-            <div id="montant_section" style="display: none;">
-                <label for="montant">Montant dû</label>
-                <input type="text" id="montant" name="montant" readonly>
-            </div>
-            <div id="societe_fields" style="display: none;">
-                <label for="essence_montant">Montant essence/électricité :</label>
-                <input type="number" name="essence_montant" id="essence_montant">
-
-                <label for="piece_jointe_essence">Preuve essence/électricité :</label>
-                <input type="file" name="piece_jointe_essence" id="piece_jointe_essence">
-            </div>
-
-            <!-- Section Péage, visible pour les deux types de véhicules -->
-            <div id="peage_fields" style="display: none;">
-                <label for="peage_montant">Montant du péage :</label>
-                <input type="number" name="peage_montant" id="peage_montant">
-
-                <label for="piece_jointe_peage">Preuve de péage :</label>
-                <input type="file" name="piece_jointe_peage" id="piece_jointe_peage">
-            </div>
-            <label for="autres_frais_transport">Avez-vous d'autres frais de transport ?</label>
-            
-            <select id="autres_frais_transport" name="autres_frais_transport" onchange="toggleAutresFraisTransport(this.value)">
-                <option value="non">Non</option>
-                <option value="oui">Oui</option>
-            </select>
-
-            <div id="autres_frais_section" style="display: none;">
-                <div id="taxi_fields">
-                    <label for="taxi_montant">Montant frais de taxi :</label>
-                    <input type="number" name="taxi_montant" id="taxi_montant">
-
-                    <label for="piece_jointe_taxi">Preuve frais de taxi :</label>
-                    <input type="file" name="piece_jointe_taxi" id="piece_jointe_taxi">
+                    </fieldset>
                 </div>
 
-                <div id="transport_en_commun_fields">
-                    <label for="transport_en_commun_montant">Montant frais de transport en commun :</label>
-                    <input type="number" name="transport_en_commun_montant" id="transport_en_commun_montant">
+                <div id="transport_fields" style="display: none;">
 
-                    <label for="piece_jointe_transport_en_commun">Preuve frais de transport en commun :</label>
-                    <input type="file" name="piece_jointe_transport_en_commun" id="piece_jointe_transport_en_commun">
+                    <fieldset >
+                        <legend>Frais de transport </legend>
+                        <label for="frais_transport">Avez-vous utilisé un véhicule ? </label>
+                            <select id="frais_transport" name="frais_transport" onchange="toggleVehicule(this.value)">
+                                <option value="non">Non</option>
+                                <option value="oui">Oui</option>
+                            </select>
+
+                    <div id="vehicule_section" style="display: none;">
+                        <label for="vehicule">Type de véhicule</label>
+                        <select id="vehicule" name="vehicule" onchange="togglePuissance(this.value)">
+                            <option value="">--Sélectionner--</option>
+                            <option value="societe">Véhicule de société</option>
+                            <option value="personnel">Véhicule personnel</option>
+                        
+                        </select>
+                    </div>
+                    <div id="puissance_section" style="display: none;">
+                        <label for="puissance">Puissance fiscale</label>
+                        <select id="puissance" name="puissance" onchange="calculMontant()">
+                            <option value="3">3 CV et moins (0.529 €/km)</option>
+                            <option value="4">4 CV (0.606 €/km)</option>
+                            <option value="5">5 CV (0.636 €/km)</option>
+                            <option value="6">6 CV (0.665 €/km)</option>
+                            <option value="7">7 CV et plus (0.697 €/km)</option>
+                        </select>
+                    </div>
+                    <div id="kilometres_section" style="display: none;">
+                        <label for="kilometres">Nombre de kilomètres parcourus</label>
+                        <input type="number" id="kilometres" name="kilometres" min="0" onchange="calculMontant()">
+                    </div>
+                    <div id="montant_section" style="display: none;">
+                        <label for="montant">Montant dû</label>
+                        <input type="text" id="montant" name="montant" readonly>
+                    </div>
+                    <div id="societe_fields" style="display: none;">
+                        <label for="essence_montant">Montant essence/électricité :</label>
+                        <input type="number" name="essence_montant" id="essence_montant">
+
+                        <label for="piece_jointe_essence">Preuve essence/électricité :</label>
+                        <input type="file" name="piece_jointe_essence" id="piece_jointe_essence">
+                    </div>
+
+                    <!-- Section Péage, visible pour les deux types de véhicules -->
+                    <div id="peage_fields" style="display: none;">
+                        <label for="peage_montant">Montant du péage :</label>
+                        <input type="number" name="peage_montant" id="peage_montant">
+
+                        <label for="piece_jointe_peage">Preuve de péage :</label>
+                        <input type="file" name="piece_jointe_peage" id="piece_jointe_peage">
+                    </div>
+                    <label for="autres_frais_transport">Avez-vous d'autres frais de transport ?</label>
+                    
+                    <select id="autres_frais_transport" name="autres_frais_transport" onchange="toggleAutresFraisTransport(this.value)">
+                        <option value="non">Non</option>
+                        <option value="oui">Oui</option>
+                    </select>
+
+                    <div id="autres_frais_section" style="display: none;">
+                        <div id="taxi_fields">
+                            <label for="taxi_montant">Montant frais de taxi :</label>
+                            <input type="number" name="taxi_montant" id="taxi_montant">
+
+                            <label for="piece_jointe_taxi">Preuve frais de taxi :</label>
+                            <input type="file" name="piece_jointe_taxi" id="piece_jointe_taxi">
+                        </div>
+
+                        <div id="transport_en_commun_fields">
+                            <label for="transport_en_commun_montant">Montant frais de transport en commun :</label>
+                            <input type="number" name="transport_en_commun_montant" id="transport_en_commun_montant">
+
+                            <label for="piece_jointe_transport_en_commun">Preuve frais de transport en commun :</label>
+                            <input type="file" name="piece_jointe_transport_en_commun" id="piece_jointe_transport_en_commun">
+                        </div>
+
+                        <div id="train_fields">
+                            <label for="train_montant">Montant frais de train :</label>
+                            <input type="number" name="train_montant" id="train_montant">
+
+                            <label for="piece_jointe_train">Preuve frais de train :</label>
+                            <input type="file" name="piece_jointe_train" id="piece_jointe_train">
+                        </div>
+
+                        <div id="avion_fields">
+                            <label for="avion_montant">Montant frais d'avion :</label>
+                            <input type="number" name="avion_montant" id="avion_montant">
+
+                            <label for="piece_jointe_avion">Preuve frais d'avion :</label>
+                            <input type="file" name="piece_jointe_avion" id="piece_jointe_avion">
+                        </div>
+                    </div>
+                    </fieldset>
                 </div>
-
-                <div id="train_fields">
-                    <label for="train_montant">Montant frais de train :</label>
-                    <input type="number" name="train_montant" id="train_montant">
-
-                    <label for="piece_jointe_train">Preuve frais de train :</label>
-                    <input type="file" name="piece_jointe_train" id="piece_jointe_train">
-                </div>
-
-                <div id="avion_fields">
-                    <label for="avion_montant">Montant frais d'avion :</label>
-                    <input type="number" name="avion_montant" id="avion_montant">
-
-                    <label for="piece_jointe_avion">Preuve frais d'avion :</label>
-                    <input type="file" name="piece_jointe_avion" id="piece_jointe_avion">
-                </div>
-            </div>
 
             <?php submit_button('Ajouter Frais'); ?>
     </form>
@@ -360,41 +405,26 @@ function frais_user_frais_form() {
                 motifAutreRow.style.display = 'none';
             }
         }
-
         function toggleNuiteeFields() {
-            var nuitéeChecked = document.getElementById('nuitee').checked;
-            var nuitéeFields = document.getElementById('nuitee_fields');
-            var montantNuiteeRow = document.getElementById('montant_nuitee_row');
-            var primeGrandDeplacementRow = document.getElementById('prime_grand_deplacement_row');
-            var pieceJointeNuiteeRow = document.getElementById('piece_jointe_nuitee_row');
-
-            var repasSoirRow = document.getElementById('repas_soir_row');
-            var montantRepasSoirRow = document.getElementById('montant_repas_soir_row');
-            var pieceJointeRepasSoirRow = document.getElementById('piece_jointe_repas_soir_row');
-
-                // Affichez ou masquez les champs de nuitée
-                if (nuitéeChecked) {
-                    nuitéeFields.style.display = '';
-                    montantNuiteeRow.style.display = '';
-                    primeGrandDeplacementRow.style.display = '';
-                    pieceJointeNuiteeRow.style.display = '';
-
-                    // Affichez les champs de repas du soir
-                    repasSoirRow.style.display = '';
-                    montantRepasSoirRow.style.display = '';
-                    pieceJointeRepasSoirRow.style.display = '';
-                } else {
-                    nuitéeFields.style.display = 'none';
-                    montantNuiteeRow.style.display = 'none';
-                    primeGrandDeplacementRow.style.display = 'none';
-                    pieceJointeNuiteeRow.style.display = 'none';
-
-                    // Masquez les champs de repas du soir
-                    repasSoirRow.style.display = 'none';
-                    montantRepasSoirRow.style.display = 'none';
-                    pieceJointeRepasSoirRow.style.display = 'none';
-                }
-        }
+    const nuiteeFields = document.getElementById('nuitee_fields');
+    if (document.getElementById('nuitee').checked) {
+        nuiteeFields.style.display = 'flex'; // Utiliser flexbox pour les aligner côte à côte
+        nuiteeFields.classList.add('show'); // Ajouter la classe pour activer le flex
+    } else {
+        nuiteeFields.style.display = 'none'; // Masquer si non coché
+        nuiteeFields.classList.remove('show'); // Retirer la classe de flex
+    }
+}
+function toggleTransportFieldset() {
+    const transportFields = document.getElementById('transport_fields');
+    if (document.getElementById('transport_checkbox').checked) {
+        transportFields.style.display = 'flex'; // Utiliser flexbox pour les aligner côte à côte
+        transportFields.classList.add('show'); // Ajouter la classe pour activer le flex
+    } else {
+        transportFields.style.display = 'none'; // Masquer si non coché
+        transportFields.classList.remove('show'); // Retirer la classe de flex
+    }
+}
 
         function toggleVehicule(value) {
             // Afficher ou masquer la section "Type de véhicule"
@@ -433,6 +463,8 @@ function frais_user_frais_form() {
             }
         }
 
+    
+
         function calculMontant() {
             let puissance = document.getElementById('puissance').value;
             let kilometres = document.getElementById('kilometres').value;
@@ -465,6 +497,7 @@ function frais_user_frais_form() {
         function toggleAutresFraisTransport(value) {
             document.getElementById('autres_frais_section').style.display = value === 'oui' ? 'block' : 'none';
         }
+
         
             
     </script>
