@@ -241,6 +241,7 @@ function frais_user_frais_form() {
                                     <option value="">Sélectionnez un type</option>
                                     <option value="restaurant">Restaurant</option>
                                     <option value="magasin">Achats magasins</option>
+                                    <option value="preleveur">forfait préléveurs</option>
                                 </select>
                             
                             <label for="montant_repas_midi">Montant repas (midi)</label>

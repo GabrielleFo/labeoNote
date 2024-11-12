@@ -125,7 +125,10 @@ function frais_display_user_frais_table() {
                 $montant_du += min($row->montant_repas_midi, 15.25);
             } elseif ($row->repas_midi_type === 'magasin') {
                 $montant_du += min($row->montant_repas_midi, 9.40);
-            }else {
+            } elseif ($row->repas_midi_type === 'preleveur') {
+                $montant_du += min($row->montant_repas_midi, 9.40);
+            }
+            else {
                 // Ajouter le montant dépensé si aucun type spécifique
                 $montant_du += (float)$row->montant_repas_midi;
             }
@@ -327,11 +330,12 @@ function frais_display_user_frais_table() {
                         <option value="">Sélectionnez un type</option>
                         <option value="restaurant" <?php echo ($repas_midi_type === 'restaurant') ? 'selected' : ''; ?>>Restaurant</option>
                         <option value="magasin" <?php echo ($repas_midi_type === 'magasin') ? 'selected' : ''; ?>>Achats magasins</option>
+                        <option value="preleveur" <?php echo ($repas_midi_type === 'preleveur') ? 'selected' : ''; ?>>preleveurs</option>
                     </select>
 
                     <!-- Champ pour le montant des repas midi -->
                     <label for="montant_repas_midi">Montant repas midi:</label>
-                        <input type="number" name="montant_repas_midi" value="<?php echo esc_attr($frais->montant_repas_midi); ?>">
+                        <input type="number" name="montant_repas_midi" value="<?php echo esc_attr($frais->montant_repas_midi); ?>"step="0.01">
                 </div>
                 <div class="form-row">
           
@@ -348,7 +352,7 @@ function frais_display_user_frais_table() {
 
                     <!-- Champ pour le montant des repas soir -->
                     <label for="montant_repas_soir">Montant repas soir:</label>
-                        <input type="number" name="montant_repas_soir" value="<?php echo esc_attr($frais->montant_repas_soir); ?>">
+                        <input type="number" name="montant_repas_soir" value="<?php echo esc_attr($frais->montant_repas_soir); ?>"step="0.01">
                 </div>
                 <div class="form-row">
                     <!-- Récupérer le type d'hôtel depuis la base de données -->
@@ -365,30 +369,30 @@ function frais_display_user_frais_table() {
 
                     <!-- Champ pour le montant des nuitées -->
                     <label for="montant_nuitee">Montant nuitée:</label>
-                        <input type="number" name="montant_nuitee" value="<?php echo esc_attr($frais->montant_nuitee); ?>">
+                        <input type="number" name="montant_nuitee" value="<?php echo esc_attr($frais->montant_nuitee); ?>"step="0.01">
                 </div>
                 <div class="form-row">
                     <!-- Autres champs pour les frais -->
                     <label for="essence_montant">Montant essence:</label>
-                    <input type="number" name="essence_montant" value="<?php echo esc_attr($frais->essence_montant); ?>">
+                    <input type="number" name="essence_montant" value="<?php echo esc_attr($frais->essence_montant); ?>"step="0.01">
 
                     <label for="peage_montant">Montant péage:</label>
-                    <input type="number" name="peage_montant" value="<?php echo esc_attr($frais->peage_montant); ?>">
+                    <input type="number" name="peage_montant" value="<?php echo esc_attr($frais->peage_montant); ?>"step="0.01">
                 </div>
                 <div class="form-row">
                     <label for="taxi_montant">Montant taxi:</label>
-                    <input type="number" name="taxi_montant" value="<?php echo esc_attr($frais->taxi_montant); ?>">
+                    <input type="number" name="taxi_montant" value="<?php echo esc_attr($frais->taxi_montant); ?>"step="0.01">
 
                     <label for="transport_en_commun_montant">Montant transport en commun:</label>
-                    <input type="number" name="transport_en_commun_montant" value="<?php echo esc_attr($frais->transport_en_commun_montant); ?>">
+                    <input type="number" name="transport_en_commun_montant" value="<?php echo esc_attr($frais->transport_en_commun_montant); ?>"step="0.01">
                 </div>
                 <div class="form-row">
 
                     <label for="train_montant">Montant train:</label>
-                    <input type="number" name="train_montant" value="<?php echo esc_attr($frais->train_montant); ?>">
+                    <input type="number" name="train_montant" value="<?php echo esc_attr($frais->train_montant); ?>"step="0.01">
 
                     <label for="avion_montant">Montant avion:</label>
-                    <input type="number" name="avion_montant" value="<?php echo esc_attr($frais->avion_montant); ?>">
+                    <input type="number" name="avion_montant" value="<?php echo esc_attr($frais->avion_montant); ?>"step="0.01">
                 </div>
 
                 <input type="hidden" name="frais_id" value="<?php echo esc_attr($frais->id); ?>">
