@@ -122,7 +122,7 @@ function frais_display_user_frais_table() {
         // Montant dû pour repas du midi
         if ($row->montant_repas_midi > 0) {
             if ($row->repas_midi_type === 'restaurant') {
-                $montant_du += min($row->montant_repas_midi, 15.40);
+                $montant_du += min($row->montant_repas_midi, 15.25);
             } elseif ($row->repas_midi_type === 'magasin') {
                 $montant_du += min($row->montant_repas_midi, 9.40);
             }else {
@@ -132,7 +132,7 @@ function frais_display_user_frais_table() {
         }
         if ($row->montant_repas_soir > 0) {
             if ($row->repas_soir_type === 'restaurant') {
-                $montant_du += min($row->montant_repas_soir, 15.40);
+                $montant_du += min($row->montant_repas_soir, 15.25);
             } elseif ($row->repas_soir_type === 'magasin') {
                 $montant_du += min($row->montant_repas_soir, 9.40);
            
